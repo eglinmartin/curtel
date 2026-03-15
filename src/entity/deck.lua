@@ -90,17 +90,6 @@ function Deck:reset()
 end
 
 
-function Deck:deal_card()
-    if #self.cards == 0 then
-        self:reset()
-        self:shuffle()
-    end
-
-    local card = table.remove(self.cards, 1)
-    return card
-end
-
-
 function Deck:shuffle()
     -- Shuffle the deck
     for i = #self.cards, 2, -1 do
@@ -108,6 +97,12 @@ function Deck:shuffle()
         self.cards[i], self.cards[j] = self.cards[j], self.cards[i]
     end
 
+end
+
+
+function Deck:deal_card()
+    local card = table.remove(self.cards, 1)
+    return card
 end
 
 

@@ -88,9 +88,14 @@ function GameScene:animate_dealing(dt)
         -- Iterate over player hand size
         for i = 1, self.player.hand_size do
             self.card_frame = 1 + (5 * (i-1))
-            
+
             if self.animation_dealing == self.card_frame then
+
                 self.player.hand[i] = self.player.deck:deal_card()
+                if #self.player.deck.cards == 0 then
+                    self.player.deck:reset()
+                    self.player.deck:shuffle()
+                end
                 
                 self.render_manager:create_draw_object_foreground("player_card_" .. i, "cards_" .. self.player.hand[i].suit, self.player.hand[i].value, 11.5 + (11 * i), 101.5 + (3 * i), 0, 1, 128+i)
                 self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), self.render_manager.colours.BROWN1, 26, 58, 0, 1, 64, "left")
@@ -103,12 +108,20 @@ function GameScene:animate_dealing(dt)
                 self.render_manager.draw_objects_foreground["player_card_" .. i].dscale = -0.3
             end
         end
+    end
+
+    if self.enemy then
 
         -- Iterate over enemy hand size
         for i = 1, self.enemy.hand_size do
             self.card_frame = 1 + (5 * (i-1))
+
             if self.animation_dealing == self.card_frame then
                 self.enemy.hand[i] = self.enemy.deck:deal_card()
+                if #self.enemy.deck.cards == 0 then
+                    self.enemy.deck:reset()
+                    self.enemy.deck:shuffle()
+                end
 
                 self.render_manager:create_draw_object_foreground("enemy_card_" .. i, "cards_" .. self.enemy.hand[i].suit, self.enemy.hand[i].value, 228.5 - (11 * i), 101.5 + (3 * i), 0, 1, 128+i)
                 self.render_manager:create_text_object("enemy_deck", tostring(#self.enemy.deck.cards), self.render_manager.colours.BROWN1, 215, 58, 0, 1, 64, "right")
@@ -121,7 +134,6 @@ function GameScene:animate_dealing(dt)
                 self.render_manager.draw_objects_foreground["enemy_card_" .. i].dscale = -0.3
             end
         end
-
     end
 end
 
@@ -200,9 +212,7 @@ function GameScene:setup_events()
     -- Deal cards to the player on deal cards command
     self.event_manager:on(
         self.event_manager.events.DEALCARDS, self, function()
-            self.player.hand = {}
             self.animation_dealing = 0
-            self:update_sprites()
         end
     )
 end
