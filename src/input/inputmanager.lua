@@ -5,18 +5,33 @@ local InputManager = Class{}
 
 function InputManager:init(EVENT_MANAGER)
     self.event_manager = EVENT_MANAGER
+    self.keybinds = {
+        ["1"] = EVENT_MANAGER.events.SWITCHSCREEN_GAME,
+        ["2"] = EVENT_MANAGER.events.SWITCHSCREEN_SHOP,
+        ["3"] = EVENT_MANAGER.events.DEALCARDS,
+        
+    }
 end
 
 
 function InputManager:keypressed(key)
-    if key == "1" then
-        self.event_manager:trigger(self.event_manager.events.SWITCHSCREEN_GAME)
+    local event = self.keybinds[key]
+    if event then
+        self.event_manager:trigger(event)
     end
-    if key == "2" then
-        self.event_manager:trigger(self.event_manager.events.SWITCHSCREEN_SHOP)
+end
+
+
+function InputManager:mousepressed(x, y, button)
+    if button == 1 then
+        self.event_manager:trigger(self.event_manager.events.MOUSE_PRESSED, x, y)
     end
-    if key == "3" then
-        self.event_manager:trigger(self.event_manager.events.DEALCARDS)
+end
+
+
+function InputManager:mousereleased(x, y, button)
+    if button == 1 then
+        self.event_manager:trigger(self.event_manager.events.MOUSE_RELEASED, x, y)
     end
 end
 

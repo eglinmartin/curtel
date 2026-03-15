@@ -23,7 +23,7 @@ end
 
 function ShopScene:enter()
     self:update_sprites()
-    self.render_manager:set_shadow_colour(self.render_manager.colours.RED3)
+    self.render_manager:set_shadow_colour(self.render_manager.colours.GREEN4)
     self.render_manager.draw_objects_background["background"].dscale = 0.1
     self.render_manager.draw_objects_foreground["barrel_base"].dy = 4
     self.render_manager.draw_objects_foreground["barrel_chambers"].dy = 4
