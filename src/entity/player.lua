@@ -17,6 +17,7 @@ function Player:init(controller)
     self.money = 10
     self.animations = {}
 
+    self.hand_size = 3
     self.hand = {}
 end
 

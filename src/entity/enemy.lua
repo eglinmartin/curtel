@@ -17,6 +17,7 @@ function Enemy:init(controller)
     self.animations = {}
 
     self.hand = {}
+    self.hand_size = 3
 end
 
 

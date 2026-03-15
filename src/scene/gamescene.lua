@@ -19,6 +19,7 @@ end
 
 
 function GameScene:enter()
+    self.render_manager:clear_screen()
     self:setup_events()
     
     self.enemy = Enemy()
@@ -83,79 +84,49 @@ function GameScene:animate_dealing(dt)
     self.animation_dealing = self.animation_dealing + 1
 
     if self.player then
-        self.player:update(dt)
 
-        if #self.player.hand > 0 and #self.player.deck.cards > 0 then
-            if self.animation_dealing == 1 then
-                self.render_manager.draw_objects_foreground["hud_player_deck"].dscale = 0.5
-                self.render_manager.text_objects["player_deck"].dx = 3
-                self.render_manager.draw_objects_foreground["player_card_1"].dx = -3
-                self.render_manager.draw_objects_foreground["player_card_1"].dy = -44
-                self.render_manager.draw_objects_foreground["player_card_1"].dscale = -0.3
-            end
+        -- Iterate over player hand size
+        for i = 1, self.player.hand_size do
+            self.card_frame = 1 + (5 * (i-1))
             
-            if self.animation_dealing < 9 then
-                self.render_manager.draw_objects_foreground["player_card_2"].dx = -90
-            elseif self.animation_dealing == 9 then
-                self.render_manager.draw_objects_foreground["hud_player_deck"].dscale = 0.5
+            if self.animation_dealing == self.card_frame then
+                self.player.hand[i] = self.player.deck:deal_card()
+                
+                self.render_manager:create_draw_object_foreground("player_card_" .. i, "cards_" .. self.player.hand[i].suit, self.player.hand[i].value, 11.5 + (11 * i), 101.5 + (3 * i), 0, 1, 128+i)
+                self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), self.render_manager.colours.BROWN1, 26, 58, 0, 1, 64, "left")
                 self.render_manager.text_objects["player_deck"].dx = 3
-                self.render_manager.draw_objects_foreground["player_card_2"].dx = -14
-                self.render_manager.draw_objects_foreground["player_card_2"].dy = -47
-                self.render_manager.draw_objects_foreground["player_card_2"].dscale = -0.3
-            end
 
-            if self.animation_dealing < 17 then
-                self.render_manager.draw_objects_foreground["player_card_3"].dx = -180
-            elseif self.animation_dealing == 17 then
                 self.render_manager.draw_objects_foreground["hud_player_deck"].dscale = 0.5
-                self.render_manager.text_objects["player_deck"].dx = 3
-                self.render_manager.draw_objects_foreground["player_card_3"].dx = -25
-                self.render_manager.draw_objects_foreground["player_card_3"].dy = -50
-                self.render_manager.draw_objects_foreground["player_card_3"].dscale = -0.3
+
+                self.render_manager.draw_objects_foreground["player_card_" .. i].dx = -3 - (11 * (i-1))
+                self.render_manager.draw_objects_foreground["player_card_" .. i].dy = -44 - (3 * (i-1))
+                self.render_manager.draw_objects_foreground["player_card_" .. i].dscale = -0.3
             end
         end
-    end
 
-    if self.enemy then
-        self.enemy:update(dt)
+        -- Iterate over enemy hand size
+        for i = 1, self.enemy.hand_size do
+            self.card_frame = 1 + (5 * (i-1))
+            if self.animation_dealing == self.card_frame then
+                self.enemy.hand[i] = self.enemy.deck:deal_card()
 
-        if #self.enemy.hand > 0 and #self.enemy.deck.cards > 0 then
-            if self.animation_dealing < 1 then
-                self.render_manager.draw_objects_foreground["enemy_card_1"].dx = 180
-            elseif self.animation_dealing == 1 then
-                self.render_manager.draw_objects_foreground["hud_enemy_deck"].dscale = 0.5
-                self.render_manager.text_objects["enemy_deck"].dx = -3
-                self.render_manager.draw_objects_foreground["enemy_card_1"].dx = 3
-                self.render_manager.draw_objects_foreground["enemy_card_1"].dy = -44
-                self.render_manager.draw_objects_foreground["enemy_card_1"].dscale = -0.3
-            end
-            
-            if self.animation_dealing < 9 then
-                self.render_manager.draw_objects_foreground["enemy_card_2"].dx = 180
-            elseif self.animation_dealing == 9 then
-                self.render_manager.draw_objects_foreground["hud_enemy_deck"].dscale = 0.5
-                self.render_manager.text_objects["enemy_deck"].dx = -3
-                self.render_manager.draw_objects_foreground["enemy_card_2"].dx = 14
-                self.render_manager.draw_objects_foreground["enemy_card_2"].dy = -47
-                self.render_manager.draw_objects_foreground["enemy_card_2"].dscale = -0.3
-            end
+                self.render_manager:create_draw_object_foreground("enemy_card_" .. i, "cards_" .. self.enemy.hand[i].suit, self.enemy.hand[i].value, 228.5 - (11 * i), 101.5 + (3 * i), 0, 1, 128+i)
+                self.render_manager:create_text_object("enemy_deck", tostring(#self.enemy.deck.cards), self.render_manager.colours.BROWN1, 215, 58, 0, 1, 64, "right")
 
-            if self.animation_dealing < 17 then
-                self.render_manager.draw_objects_foreground["enemy_card_3"].dx = 180
-            elseif self.animation_dealing == 17 then
-                self.render_manager.draw_objects_foreground["hud_enemy_deck"].dscale = 0.5
                 self.render_manager.text_objects["enemy_deck"].dx = -3
-                self.render_manager.draw_objects_foreground["enemy_card_3"].dx = 25
-                self.render_manager.draw_objects_foreground["enemy_card_3"].dy = -50
-                self.render_manager.draw_objects_foreground["enemy_card_3"].dscale = -0.3
+                self.render_manager.draw_objects_foreground["hud_enemy_deck"].dscale = 0.5
+
+                self.render_manager.draw_objects_foreground["enemy_card_" .. i].dx = 3 + (11 * (i-1))
+                self.render_manager.draw_objects_foreground["enemy_card_" .. i].dy = -44 - (3 * (i-1))
+                self.render_manager.draw_objects_foreground["enemy_card_" .. i].dscale = -0.3
             end
         end
+
     end
 end
 
 
 function GameScene:update_sprites()
-    self.render_manager:clear_screen()
     self.render_manager:create_draw_object_background("background", "background", "green", 120, 67.5, 0, 1, 255)
     self.render_manager:create_draw_object_foreground("table", "table", "1", 120, 114.5, 0, 1, 128)
 
@@ -175,13 +146,6 @@ function GameScene:update_sprites()
         self.render_manager:create_text_object("player_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health), self.render_manager.colours.RED1, 26, 36, 0, 1, 64, "left")
         self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), self.render_manager.colours.YELLOW1, 26, 47, 0, 1, 64, "left")
         self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), self.render_manager.colours.BROWN1, 26, 58, 0, 1, 64, "left")
-        
-        -- Draw player's hand
-        if #self.player.hand > 0 then
-            for i, card in ipairs(self.player.hand) do
-                self.render_manager:create_draw_object_foreground("player_card_" .. i, "cards_" .. card.suit, card.value, 11.5 + (11 * i), 101.5 + (3 * i), 0, 1, 128+i)
-            end
-        end
 
         if #self.player.tokens > 0 then
             self.render_manager:create_draw_object_foreground("player_token_icon_1", "icons", "token_" .. self.player.tokens[1].type, 81.5, 65.5, 0, 1, 129)
@@ -236,18 +200,8 @@ function GameScene:setup_events()
     -- Deal cards to the player on deal cards command
     self.event_manager:on(
         self.event_manager.events.DEALCARDS, self, function()
+            self.player.hand = {}
             self.animation_dealing = 0
-
-            if #self.player.deck.cards >= 3 then
-                self.player.deck:deal_cards()
-            end
-            
-            if self.enemy then
-                if #self.enemy.deck.cards >= 3 then
-                    self.enemy.deck:deal_cards()
-                end
-            end
-
             self:update_sprites()
         end
     )

@@ -90,14 +90,14 @@ function Deck:reset()
 end
 
 
-function Deck:deal_cards()
-    self.owner.hand = {}
-    if #self.cards >= 3 then
-        for i = 1, 3 do
-            local card = table.remove(self.cards, 1)
-            table.insert(self.owner.hand, card)
-        end
+function Deck:deal_card()
+    if #self.cards == 0 then
+        self:reset()
+        self:shuffle()
     end
+
+    local card = table.remove(self.cards, 1)
+    return card
 end
 
 
