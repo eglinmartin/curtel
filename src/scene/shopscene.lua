@@ -29,7 +29,7 @@ end
 function ShopScene:animate_title()
     self.animation_title = self.animation_title + 1
     local letters = {"S", "H", "O", "P"}
-    local x_coords = {0, 11, 24, 35}
+    local x_coords = {0, 10, 22, 32}
 
     for i, v in ipairs(letters) do
         self.title_frame = 1 + (5 * (i-1))
@@ -63,6 +63,14 @@ function ShopScene:animate_title()
         self.render_manager:create_draw_object_foreground("hud_player_deck", "icons", "cards", 18.5, 79.5, 0, 1, 128)
         self.render_manager.text_objects["player_deck"].dx = -3
         self.render_manager.draw_objects_foreground["hud_player_deck"].dx = -3
+
+    elseif self.animation_title == 41 then
+        self.render_manager:create_text_object("text_map", "MAP", self.render_manager.colours.GREY2, 16, 102, 0, 1, 64, "left")
+        self.render_manager.text_objects["text_map"].dx = -3
+
+    elseif self.animation_title == 46 then
+        self.render_manager:create_text_object("text_done", "DONE", self.render_manager.colours.GREY2, 16, 113, 0, 1, 64, "left")
+        self.render_manager.text_objects["text_done"].dx = -3
     end
 end
 
@@ -71,10 +79,16 @@ function ShopScene:enter()
     self.animation_title = 0
 
     self:update_sprites()
+    
     self.render_manager:set_shadow_colour(self.render_manager.colours.GREEN5)
     self.render_manager.draw_objects_background["background"].dscale = 0.1
+    self.render_manager.draw_objects_foreground["divider_vertical"].dx = -4
     self.render_manager.draw_objects_foreground["barrel_base"].dy = 4
     self.render_manager.draw_objects_foreground["barrel_chambers"].dy = 4
+
+    for i, v in ipairs(self.player.tokens) do
+        self.render_manager.draw_objects_foreground["player_token" .. i].dy = 4
+    end
 
 end
 
@@ -84,6 +98,7 @@ function ShopScene:update_sprites()
 
     local barrel_xy = {189.5, 59.5}
     self.render_manager:create_draw_object_background("background", "background", "green", 120, 67.5, 0, 1, 255)
+    self.render_manager:create_draw_object_foreground("divider_vertical", "divider_vertical", "green", 72, 67.5, 0, 1, 255)
     self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", barrel_xy[1], barrel_xy[2], 0, 1, 128)
     self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", barrel_xy[1], barrel_xy[2], 0, 1, 129)
 
