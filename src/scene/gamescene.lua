@@ -84,10 +84,9 @@ function GameScene:animate_dealing(dt)
     self.animation_dealing = self.animation_dealing + 1
 
     if self.player then
-
         -- Iterate over player hand size
         for i = 1, self.player.hand_size do
-            self.card_frame = 1 + (5 * (i-1))
+            self.card_frame = 1 + (8 * (i-1))
 
             if self.animation_dealing == self.card_frame then
 
@@ -111,10 +110,9 @@ function GameScene:animate_dealing(dt)
     end
 
     if self.enemy then
-
         -- Iterate over enemy hand size
         for i = 1, self.enemy.hand_size do
-            self.card_frame = 1 + (5 * (i-1))
+            self.card_frame = 1 + (8 * (i-1))
 
             if self.animation_dealing == self.card_frame then
                 self.enemy.hand[i] = self.enemy.deck:deal_card()

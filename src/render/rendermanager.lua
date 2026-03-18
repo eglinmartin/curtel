@@ -124,8 +124,18 @@ function RenderManager:create_draw_object_foreground(sprite_id, sprite_name, spr
 end
 
 
+function RenderManager:remove_draw_object_foreground(sprite_id)
+    self.draw_objects_foreground[sprite_id] = nil
+end
+
+
 function RenderManager:create_text_object(text_id, string, colour, x, y, scale, rot, depth, align)
     self.text_objects[text_id] = TextObject(text_id, string, colour, x, y, scale, rot, depth, align)
+end
+
+
+function RenderManager:remove_text_object(text_id)
+    self.text_objects[text_id] = nil
 end
 
 

@@ -13,8 +13,8 @@ local RenderManager = require("src.render.rendermanager")
 local SceneManager = require("src.scene.scenemanager")
 
 rs.conf({game_width = 240, game_height = 135, pixel_perfect = true})
-rs.setMode(1920, 1080, {fullscreen = true})
--- rs.setMode(960, 540, {fullscreen = false})
+-- rs.setMode(1920, 1080, {fullscreen = true})
+rs.setMode(960, 540, {fullscreen = false})
 
 
 function love.load()
