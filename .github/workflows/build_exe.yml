@@ -1,0 +1,37 @@
+name: Build for Windows
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Package .love file
+        shell: bash
+        run: |
+          7z a -tzip game.love ./*.lua ./assets/ ./bin/ ./src/ ./lib/
+
+      - name: Build Windows packages
+        uses: love-actions/love-actions-windows@v1
+        with:
+          love-ref: "11.5"
+          love-package: ./game.love
+          product-name: "Curtel"
+          output-folder: ./build
+          love-actions-folder: ./love-actions-windows
+
+      - name: Create Latest Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Build
+          draft: false
+          prerelease: false
+          files: ./build/Curtel_x64.zip
