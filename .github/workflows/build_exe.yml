@@ -27,6 +27,19 @@ jobs:
           output-folder: ./build
           love-actions-folder: ./love-actions-windows
 
+      - name: Delete old release and tag
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const releases = await github.rest.repos.listReleases({ owner, repo });
+            const latest = releases.data.find(r => r.tag_name === 'latest');
+            if (latest) await github.rest.repos.deleteRelease({ owner, repo, release_id: latest.id });
+            try {
+              await github.rest.git.deleteRef({ owner, repo, ref: 'tags/latest' });
+            } catch {}
+      
       - name: Create Latest Release
         uses: softprops/action-gh-release@v2
         with:
