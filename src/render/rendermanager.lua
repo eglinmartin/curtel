@@ -51,8 +51,7 @@ function RenderManager:init(SCENE_MANAGER)
     self.scene_manager = SCENE_MANAGER
     self.colours = Colours
 
-    self.font = love.graphics.newFont("assets/curtel.ttf", 16)
-    love.graphics.setFont(self.font)
+    love.graphics.setFont(love.graphics.newFont("assets/curtel.ttf", 16))
 
     self.shadow_colour = {75/255, 90/255, 87/255, 1}
     self.draw_objects_background = {}
