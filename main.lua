@@ -1,5 +1,6 @@
-if arg[2] == "debug" then
-    require("lldebugger").start()
+if arg and arg[2] == "debug" then
+    local ok, dbg = pcall(require, "lldebugger")
+    if ok then dbg.start() end
 end
 
 local rs = require("lib.resolution_solution")
@@ -59,12 +60,10 @@ function love.draw()
 end
 
 
-local love_errorhandler = love.errorhandler
-function love.errorhandler(msg)
-    if lldebugger then
+if lldebugger then
+    local love_errorhandler = love.errorhandler
+    function love.errorhandler(msg)
         error(msg, 2)
-    else
-        return love_errorhandler(msg)
     end
 end
 
