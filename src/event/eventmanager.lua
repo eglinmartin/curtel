@@ -10,7 +10,8 @@ local Events = {
     SHUFFLEDECK = 'reset card deck',
     DEALCARDS = 'deal cards to player',
     SWITCHSTOCK_LEFT = 'switch stock (left)',
-    SWITCHSTOCK_RIGHT = 'switch stock (right)'
+    SWITCHSTOCK_RIGHT = 'switch stock (right)',
+    TOGGLE_FULLSCREEN = 'toggle fullscreen'
 }
 
 

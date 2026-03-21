@@ -47,8 +47,10 @@ local Colours = {
 }
 
 
-function RenderManager:init(SCENE_MANAGER)
-    self.scene_manager = SCENE_MANAGER
+function RenderManager:init(event_manager, rs)
+    self.event_manager = event_manager
+    self.rs = rs
+    self:setup_events()
     self.colours = Colours
 
     self.font = love.graphics.newFont("assets/Curtel.ttf", 16)
@@ -58,6 +60,28 @@ function RenderManager:init(SCENE_MANAGER)
     self.draw_objects_background = {}
     self.draw_objects_foreground = {}
     self.text_objects = {}
+end
+
+
+function RenderManager:setup_events()
+    -- Shuffle and reset the deck on shuffle command
+    self.event_manager:on(
+        self.event_manager.events.TOGGLE_FULLSCREEN, self, function()
+            local fs = love.window.getFullscreen()
+            if fs then
+                self.rs.setMode(960, 540, {fullscreen = false})
+            else
+                self.rs.setMode(1920, 1080, {fullscreen = true})
+            end
+        end
+    )
+
+    -- Deal cards to the player on deal cards command
+    self.event_manager:on(
+        self.event_manager.events.DEALCARDS, self, function()
+            self.animation_dealing = 0
+        end
+    )
 end
 
 

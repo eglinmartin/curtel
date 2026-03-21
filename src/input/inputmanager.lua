@@ -11,6 +11,7 @@ function InputManager:init(EVENT_MANAGER)
         ["3"] = EVENT_MANAGER.events.DEALCARDS,
         ["4"] = EVENT_MANAGER.events.SWITCHSTOCK_LEFT,
         ["5"] = EVENT_MANAGER.events.SWITCHSTOCK_RIGHT,
+        ["f11"] = EVENT_MANAGER.events.TOGGLE_FULLSCREEN
     }
 end
 

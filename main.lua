@@ -14,8 +14,7 @@ local RenderManager = require("src.render.rendermanager")
 local SceneManager = require("src.scene.scenemanager")
 
 rs.conf({game_width = 240, game_height = 135, pixel_perfect = true})
--- rs.setMode(1920, 1080, {fullscreen = true})
-rs.setMode(960, 540, {fullscreen = false})
+rs.setMode(1920, 1080, {fullscreen = true})
 
 
 function love.load()
@@ -29,7 +28,7 @@ function love.load()
     -- Initialize managers
     EVENT_MANAGER = EventManager()
     INPUT_MANAGER = InputManager(EVENT_MANAGER)
-    RENDER_MANAGER = RenderManager()
+    RENDER_MANAGER = RenderManager(EVENT_MANAGER, rs)
     SCENE_MANAGER = SceneManager(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER)
 end
 
