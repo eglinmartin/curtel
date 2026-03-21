@@ -1,0 +1,63 @@
+{ "frames": {
+   "token_backs 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 19, "h": 19 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 19, "h": 19 },
+    "sourceSize": { "w": 19, "h": 19 },
+    "duration": 100
+   },
+   "token_backs 1.aseprite": {
+    "frame": { "x": 19, "y": 0, "w": 19, "h": 19 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 19, "h": 19 },
+    "sourceSize": { "w": 19, "h": 19 },
+    "duration": 100
+   },
+   "token_backs 2.aseprite": {
+    "frame": { "x": 38, "y": 0, "w": 19, "h": 19 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 19, "h": 19 },
+    "sourceSize": { "w": 19, "h": 19 },
+    "duration": 100
+   },
+   "token_backs 3.aseprite": {
+    "frame": { "x": 57, "y": 0, "w": 19, "h": 19 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 19, "h": 19 },
+    "sourceSize": { "w": 19, "h": 19 },
+    "duration": 100
+   },
+   "token_backs 4.aseprite": {
+    "frame": { "x": 76, "y": 0, "w": 19, "h": 19 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 19, "h": 19 },
+    "sourceSize": { "w": 19, "h": 19 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.7-x64",
+  "image": "token_backs.png",
+  "format": "RGBA8888",
+  "size": { "w": 95, "h": 19 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "bullet", "from": 0, "to": 0, "direction": "forward", "color": "#000000ff" },
+   { "name": "health", "from": 1, "to": 1, "direction": "forward", "color": "#000000ff" },
+   { "name": "damage", "from": 2, "to": 2, "direction": "forward", "color": "#000000ff" },
+   { "name": "money", "from": 3, "to": 3, "direction": "forward", "color": "#000000ff" },
+   { "name": "various", "from": 4, "to": 4, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "tokens", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

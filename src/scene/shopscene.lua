@@ -124,13 +124,15 @@ function ShopScene:animate_stock()
             self.render_manager.draw_objects_foreground["barrel_base"].dx = 2 * self.stock_direction
             self.render_manager.draw_objects_foreground["barrel_chambers"].dx = 2 * self.stock_direction
 
-            local chamber_xy = {{0.5, -22.5}, {19.5, -11.5}, {19.5, 10.5},{-0.5, 22.5}, {-19.5, 10.5}, {-19.5, -11.5}}
+            local chamber_xy = {{0, -23}, {20, -11}, {20, 11},{0, 23}, {-20, 11}, {-20, -11}}
             for i, v in ipairs(chamber_xy) do
-                self.render_manager:create_draw_object_foreground("player_token" .. i, "tokens", self.player.tokens[i].tag, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 130)
+                self.render_manager:create_draw_object_foreground("player_token_back" .. i, "token_backs", self.player.tokens[i].type, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 130)
+                self.render_manager:create_draw_object_foreground("player_token" .. i, "tokens", self.player.tokens[i].tag, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 131)
+                self.render_manager.draw_objects_foreground["player_token_back" .. i].dx = 2 * self.stock_direction
                 self.render_manager.draw_objects_foreground["player_token" .. i].dx = 2 * self.stock_direction
             end
 
-            local shop_tokens_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 72}, {113, 72}, {135, 72}}
+            local shop_tokens_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
             for i, v in ipairs(self.shop.stock["tokens"]) do
                 local cost_colour = self.render_manager.colours.YELLOW1
                 if v.cost > self.player.money then
@@ -139,10 +141,13 @@ function ShopScene:animate_stock()
 
                 self.stock_frame = 1 + (0 * (i-1))
                 if self.animation_stock == self.stock_frame then
-                    self.render_manager:create_draw_object_foreground("shop_token" .. i, "tokens", v.tag, shop_tokens_xy[i][1] - 0.5, shop_tokens_xy[i][2] - 0.5, 0, 1, 130)
-                    self.render_manager:create_text_object("shop_token_cost" .. i, "$" .. v.cost, cost_colour, shop_tokens_xy[i][1], shop_tokens_xy[i][2] + 11, 0, 1, 64, "centre")
+                    self.render_manager:create_draw_object_foreground("shop_token_back" .. i, "token_backs", v.type, shop_tokens_xy[i][1] - 0.5, shop_tokens_xy[i][2] - 0.5, 0, 1, 130)
+                    self.render_manager:create_draw_object_foreground("shop_token" .. i, "tokens", v.tag, shop_tokens_xy[i][1] - 0.5, shop_tokens_xy[i][2] - 0.5, 0, 1, 131)
+                    self.render_manager:create_text_object("shop_token_cost" .. i, "$" .. v.cost, cost_colour, shop_tokens_xy[i][1], shop_tokens_xy[i][2] + 12, 0, 1, 64, "centre")
 
+                    self.render_manager.draw_objects_foreground["shop_token_back" .. i].dx = 2 * self.stock_direction
                     self.render_manager.draw_objects_foreground["shop_token" .. i].dx = 2 * self.stock_direction
+                    self.render_manager.draw_objects_foreground["shop_token" .. i].dscale = -0.25
                     self.render_manager.text_objects["shop_token_cost" .. i].dx = 2 * self.stock_direction
                 end
             end
@@ -191,7 +196,9 @@ function ShopScene:switch_stock()
         self.render_manager:remove_draw_object_foreground("barrel_chambers")
         for i = 1, 6 do
             self.render_manager:remove_draw_object_foreground("player_token" .. i)
+            self.render_manager:remove_draw_object_foreground("player_token_back" .. i)
             self.render_manager:remove_draw_object_foreground("shop_token" .. i)
+            self.render_manager:remove_draw_object_foreground("shop_token_back" .. i)
             self.render_manager:remove_text_object("shop_token_cost" .. i)
         end
         self.stock_type = StockTypes.CARDS
