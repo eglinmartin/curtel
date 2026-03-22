@@ -13,6 +13,13 @@ function InputManager:init(EVENT_MANAGER)
         ["5"] = EVENT_MANAGER.events.SWITCHSTOCK_RIGHT,
         ["f11"] = EVENT_MANAGER.events.TOGGLE_FULLSCREEN
     }
+    self.mx = 0
+    self.my = 0
+end
+
+
+function InputManager:update()
+    self.mx, self.my = love.mouse.getPosition()
 end
 
 

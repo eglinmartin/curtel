@@ -3,7 +3,7 @@ local Class = require("lib.class")
 local TextObject = Class{}
 
 
-function TextObject:init(name, text, colour, x, y, scale, rot, depth, align)
+function TextObject:init(name, text, colour, x, y, rot, scale, depth, align)
     self.name = name
     self.text = text
     self.colour = colour
@@ -13,8 +13,8 @@ function TextObject:init(name, text, colour, x, y, scale, rot, depth, align)
     -- Bring in object's real location parameters
     self.x = x
     self.y = y
-    self.scale = scale
     self.rot = rot
+    self.scale = scale
 
     -- Create theoretical location parameters
     self.dx = 0

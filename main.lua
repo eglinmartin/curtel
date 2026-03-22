@@ -29,7 +29,7 @@ function love.load()
     EVENT_MANAGER = EventManager()
     INPUT_MANAGER = InputManager(EVENT_MANAGER)
     RENDER_MANAGER = RenderManager(EVENT_MANAGER, rs)
-    SCENE_MANAGER = SceneManager(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER)
+    SCENE_MANAGER = SceneManager(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER)
 end
 
 
@@ -51,6 +51,7 @@ function love.update(dt)
     -- Update managers
     RENDER_MANAGER:update(dt)
     SCENE_MANAGER:update(dt)
+    INPUT_MANAGER:update(dt)
 end
 
 

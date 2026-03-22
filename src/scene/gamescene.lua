@@ -2,6 +2,7 @@ local Class = require("lib.class")
 
 local GameScene = Class{}
 
+local Colours = require("src.render.colours")
 local Deck = require("src.entity.deck")
 local Enemy = require("src.entity.enemy")
 
@@ -31,7 +32,7 @@ function GameScene:enter()
     self.event_manager:trigger(self.event_manager.events.SHUFFLEDECK)
 
     self:update_sprites()
-    self.render_manager:set_shadow_colour(self.render_manager.colours.GREEN5)
+    self.render_manager:set_shadow_colour(Colours.GREEN5)
 
     -- Nod screen items
     self.render_manager.draw_objects_background["background"].dscale = 0.1
@@ -97,7 +98,7 @@ function GameScene:animate_dealing(dt)
                 end
                 
                 self.render_manager:create_draw_object_foreground("player_card_" .. i, "cards_" .. self.player.hand[i].suit, self.player.hand[i].value, 11.5 + (11 * i), 101.5 + (3 * i), 0, 1, 128+i)
-                self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), self.render_manager.colours.BROWN1, 26, 58, 0, 1, 64, "left")
+                self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 58, 0, 1, 64, "left")
                 self.render_manager.text_objects["player_deck"].dx = 3
 
                 self.render_manager.draw_objects_foreground["hud_player_deck"].dscale = 0.5
@@ -122,7 +123,7 @@ function GameScene:animate_dealing(dt)
                 end
 
                 self.render_manager:create_draw_object_foreground("enemy_card_" .. i, "cards_" .. self.enemy.hand[i].suit, self.enemy.hand[i].value, 228.5 - (11 * i), 101.5 + (3 * i), 0, 1, 128+i)
-                self.render_manager:create_text_object("enemy_deck", tostring(#self.enemy.deck.cards), self.render_manager.colours.BROWN1, 215, 58, 0, 1, 64, "right")
+                self.render_manager:create_text_object("enemy_deck", tostring(#self.enemy.deck.cards), Colours.BROWN1, 215, 58, 0, 1, 64, "right")
 
                 self.render_manager.text_objects["enemy_deck"].dx = -3
                 self.render_manager.draw_objects_foreground["hud_enemy_deck"].dscale = 0.5
@@ -152,10 +153,10 @@ function GameScene:update_sprites()
         self.render_manager:create_draw_object_foreground("hud_player_deck", "icons", "cards", 19.5, 60.5, 0, 1, 140)
 
         -- Draw player's hud (text)
-        self.render_manager:create_text_object("player_name", "PLAYER 1", self.render_manager.colours.YELLOW1, 38, 20, 0, 1, 64, "left")
-        self.render_manager:create_text_object("player_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health), self.render_manager.colours.RED1, 26, 36, 0, 1, 64, "left")
-        self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), self.render_manager.colours.YELLOW1, 26, 47, 0, 1, 64, "left")
-        self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), self.render_manager.colours.BROWN1, 26, 58, 0, 1, 64, "left")
+        self.render_manager:create_text_object("player_name", "PLAYER 1", Colours.YELLOW1, 38, 20, 0, 1, 64, "left")
+        self.render_manager:create_text_object("player_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health), Colours.RED1, 26, 36, 0, 1, 64, "left")
+        self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 47, 0, 1, 64, "left")
+        self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 58, 0, 1, 64, "left")
 
         if #self.player.tokens > 0 then
             self.render_manager:create_draw_object_foreground("player_token_icon_1", "icons", "token_" .. self.player.tokens[1].type, 81.5, 65.5, 0, 1, 129)
@@ -178,10 +179,10 @@ function GameScene:update_sprites()
         self.render_manager:create_draw_object_foreground("hud_enemy_deck", "icons", "cards", 220.5, 60.5, 0, 1, 140)
         
         -- Draw enemy's hud (text)
-        self.render_manager:create_text_object("enemy_name", "MARTIN", self.render_manager.colours.YELLOW1, 203, 20, 0, 1, 64, "right")
-        self.render_manager:create_text_object("enemy_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health), self.render_manager.colours.RED1, 215, 36, 0, 1, 64, "right")
-        self.render_manager:create_text_object("enemy_money", "$" .. tostring(self.enemy.money), self.render_manager.colours.YELLOW1, 215, 47, 0, 1, 64, "right")
-        self.render_manager:create_text_object("enemy_deck", tostring(#self.enemy.deck.cards), self.render_manager.colours.BROWN1, 215, 58, 0, 1, 64, "right")
+        self.render_manager:create_text_object("enemy_name", "MARTIN", Colours.YELLOW1, 203, 20, 0, 1, 64, "right")
+        self.render_manager:create_text_object("enemy_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health), Colours.RED1, 215, 36, 0, 1, 64, "right")
+        self.render_manager:create_text_object("enemy_money", "$" .. tostring(self.enemy.money), Colours.YELLOW1, 215, 47, 0, 1, 64, "right")
+        self.render_manager:create_text_object("enemy_deck", tostring(#self.enemy.deck.cards), Colours.BROWN1, 215, 58, 0, 1, 64, "right")
         
         -- Draw enemy's hand
         if #self.player.hand > 0 then

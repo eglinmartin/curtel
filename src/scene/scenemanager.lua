@@ -1,18 +1,20 @@
 local Class = require("lib.class")
 
+local Colours = require("src.render.colours")
 local GameScene = require("src.scene.gamescene")
 local ShopScene = require("src.scene.shopscene")
 
 local SceneManager = Class{}
 
 
-function SceneManager:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER)
+function SceneManager:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER)
     self.game_state = GAME_STATE
     self.render_manager = RENDER_MANAGER
     self.event_manager = EVENT_MANAGER
+    self.input_manager = INPUT_MANAGER
 
-    self.game_scene = GameScene(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER)
-    self.shop_scene = ShopScene(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER)
+    self.game_scene = GameScene(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER)
+    self.shop_scene = ShopScene(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER)
 
     self.current_scene = nil
     self:switch_scene(self.game_scene)
