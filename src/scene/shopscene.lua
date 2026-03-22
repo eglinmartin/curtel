@@ -6,12 +6,6 @@ local Shop = require("src.entity.shop")
 local ShopScene = Class{}
 
 
-local StockTypes = {
-    BULLETS = 'bullets',
-    CARDS = 'cards'
-}
-
-
 local Directions = {
     LEFT = -1,
     RIGHT = 1
@@ -25,7 +19,8 @@ function ShopScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     self.input_manager = INPUT_MANAGER
 
     self.shop = Shop()
-    self.stock_type = StockTypes.BULLETS
+
+    self.stock_type = self.shop.stock_types.BULLETS
     self.stock_direction = Directions.RIGHT
 
     self.player = self.game_state.player
@@ -38,10 +33,13 @@ function ShopScene:enter()
     self.render_manager:clear_screen()
     self.event_manager:remove_owner(self)
     self:setup_events()
+    
+    self.shop:reroll_bullets()
+    self.shop:reroll_cards()
 
     self.animation_title = 0
     self.animation_stock = 0
-    self.stock_type = StockTypes.BULLETS
+    self.stock_type = self.shop.stock_types.BULLETS
 
     self:update_sprites()
     
@@ -120,7 +118,40 @@ function ShopScene:animate_stock()
             self.render_manager.draw_objects_foreground["category_r"].dscale = -0.5
         end
 
-        if self.stock_type == StockTypes.BULLETS then
+        -- Create shop stock
+        local shop_stock_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
+        for i, v in ipairs(self.shop.stock[self.stock_type]) do
+
+            -- Check keyframe
+            self.stock_frame = 1 + (0 * (i-1))
+            if self.animation_stock == self.stock_frame then
+
+                -- Draw bullets
+                if self.stock_type == self.shop.stock_types.BULLETS then
+                    self.render_manager:create_draw_object_foreground("shop_item_back" .. i, "token_backs", v.item.type, shop_stock_xy[i][1] - 0.5, shop_stock_xy[i][2] - 0.5, 0, 1, 130)
+                    self.render_manager:create_draw_object_foreground("shop_item" .. i, "tokens", v.item.tag, shop_stock_xy[i][1] - 0.5, shop_stock_xy[i][2] - 0.5, 0, 1, 131)
+                    self.render_manager.draw_objects_foreground["shop_item_back" .. i].dx = 2 * self.stock_direction
+                    self.render_manager.draw_objects_foreground["shop_item" .. i].dx = 2 * self.stock_direction
+                    self.render_manager.draw_objects_foreground["shop_item" .. i].dscale = -0.25
+                
+                -- Draw cards
+                elseif self.stock_type == self.shop.stock_types.CARDS then
+                    self.render_manager:create_draw_object_foreground("shop_item" .. i, "cards_" .. v.item.suit, v.item.value, shop_stock_xy[i][1] - 0.5, shop_stock_xy[i][2] - 0.5, 0, 1, 131)
+                    self.render_manager.draw_objects_foreground["shop_item" .. i].dx = 2 * self.stock_direction
+                end
+            end
+
+            -- Draw cost
+            local cost_colour = Colours.YELLOW1
+            if v.item.cost > self.player.money then
+                cost_colour = Colours.GREY3
+            end
+            self.render_manager:create_text_object("shop_item_cost" .. i, "$" .. v.item.cost, cost_colour, shop_stock_xy[i][1], shop_stock_xy[i][2] + 12, 0, 1, 64, "centre")
+            self.render_manager.text_objects["shop_item_cost" .. i].dx = 2 * self.stock_direction
+        end
+
+        -- Draw gun barrel and player's bullets
+        if self.stock_type == self.shop.stock_types.BULLETS then
             local barrel_xy = {190, 53}
             self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", barrel_xy[1], barrel_xy[2], 0, 1, 128)
             self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", barrel_xy[1], barrel_xy[2], 0, 1, 129)
@@ -135,46 +166,8 @@ function ShopScene:animate_stock()
                 self.render_manager.draw_objects_foreground["player_token" .. i].dx = 2 * self.stock_direction
             end
 
-            local shop_tokens_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
-            for i, v in ipairs(self.shop.stock["tokens"]) do
-                local cost_colour = Colours.YELLOW1
-                if v.cost > self.player.money then
-                    cost_colour = Colours.GREY3
-                end
-
-                self.stock_frame = 1 + (0 * (i-1))
-                if self.animation_stock == self.stock_frame then
-                    self.render_manager:create_draw_object_foreground("shop_token_back" .. i, "token_backs", v.type, shop_tokens_xy[i][1] - 0.5, shop_tokens_xy[i][2] - 0.5, 0, 1, 130)
-                    self.render_manager:create_draw_object_foreground("shop_token" .. i, "tokens", v.tag, shop_tokens_xy[i][1] - 0.5, shop_tokens_xy[i][2] - 0.5, 0, 1, 131)
-                    self.render_manager:create_text_object("shop_token_cost" .. i, "$" .. v.cost, cost_colour, shop_tokens_xy[i][1], shop_tokens_xy[i][2] + 12, 0, 1, 64, "centre")
-
-                    self.render_manager.draw_objects_foreground["shop_token_back" .. i].dx = 2 * self.stock_direction
-                    self.render_manager.draw_objects_foreground["shop_token" .. i].dx = 2 * self.stock_direction
-                    self.render_manager.draw_objects_foreground["shop_token" .. i].dscale = -0.25
-                    self.render_manager.text_objects["shop_token_cost" .. i].dx = 2 * self.stock_direction
-                end
-            end
-
-        elseif self.stock_type == StockTypes.CARDS then
-            local shop_cards_xy = {{91, 39}, {113, 39}, {135, 39}}
-            for i, v in ipairs(self.shop.stock["cards"]) do
-                -- local cost_colour = Colours.YELLOW1
-                -- if v.cost > self.player.money then
-                --     cost_colour = Colours.GREY3
-                -- end
-
-                self.stock_frame = 1 + (0 * (i-1))
-                if self.animation_stock == self.stock_frame then
-                    self.render_manager:create_draw_object_foreground("shop_card" .. i, "cards_".. v.suit, v.value, shop_cards_xy[i][1] - 0.5, shop_cards_xy[i][2] - 0.5, 0, 1, 130)
-                    -- self.render_manager:create_text_object("shop_card_cost" .. i, "$" .. v.cost, cost_colour, shop_cards_xy[i][1], shop_cards_xy[i][2] + 11, 0, 1, 64, "centre")
-
-                    self.render_manager.draw_objects_foreground["shop_card" .. i].dx = 2 * self.stock_direction
-                    -- self.render_manager.text_objects["shop_card_cost" .. i].dx = 2 * self.stock_direction
-                end
-            end
         end
     end
-
 end
 
 function ShopScene:update_sprites()
@@ -186,29 +179,30 @@ function ShopScene:update_sprites()
     self.render_manager:create_draw_object_foreground("category_l", "icons", "left", 86.5, 19.5, 0, 1, 129)
     self.render_manager:create_draw_object_foreground("category_r", "icons", "right", 138.5, 19.5, 0, 1, 129)
 
-    self.render_manager:create_text_object("text_item_heading", "- BRASS BULLET -", Colours.GREY2, 155, 102, 0, 1, 64, "centre")
-    self.render_manager:create_text_object("text_item_description", "A pretty weak bullet.", Colours.BROWN2, 155, 115, 0, 0.75, 64, "centre")
+    -- self.render_manager:create_text_object("text_item_heading", "- BRASS BULLET -", Colours.GREY2, 155, 102, 0, 1, 64, "centre")
+    -- self.render_manager:create_text_object("text_item_description", "A pretty weak bullet.", Colours.BROWN2, 155, 115, 0, 0.75, 64, "centre")
 
 end
 
 
 function ShopScene:switch_stock()
-    if self.stock_type == StockTypes.BULLETS then
+    if self.stock_type == self.shop.stock_types.BULLETS then
+        self.stock_type = self.shop.stock_types.CARDS
         self.render_manager:remove_draw_object_foreground("barrel_base")
         self.render_manager:remove_draw_object_foreground("barrel_chambers")
-        for i = 1, 6 do
+        for i = 1, #self.shop.stock["bullets"] do
             self.render_manager:remove_draw_object_foreground("player_token" .. i)
             self.render_manager:remove_draw_object_foreground("player_token_back" .. i)
-            self.render_manager:remove_draw_object_foreground("shop_token" .. i)
-            self.render_manager:remove_draw_object_foreground("shop_token_back" .. i)
-            self.render_manager:remove_text_object("shop_token_cost" .. i)
+            self.render_manager:remove_draw_object_foreground("shop_item" .. i)
+            self.render_manager:remove_draw_object_foreground("shop_item_back" .. i)
+            self.render_manager:remove_text_object("shop_item_cost" .. i)
         end
-        self.stock_type = StockTypes.CARDS
 
-    elseif self.stock_type == StockTypes.CARDS then
-        self.stock_type = StockTypes.BULLETS
-        for i = 1, 3 do
-            self.render_manager:remove_draw_object_foreground("shop_card" .. i)
+    elseif self.stock_type == self.shop.stock_types.CARDS then
+        self.stock_type = self.shop.stock_types.BULLETS
+        for i = 1, #self.shop.stock["cards"] do
+            self.render_manager:remove_draw_object_foreground("shop_item" .. i)
+            self.render_manager:remove_draw_object_foreground("shop_item_cost" .. i)
         end
     end
 
