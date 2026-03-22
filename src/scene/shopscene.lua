@@ -187,7 +187,7 @@ function ShopScene:update_sprites()
     self.render_manager:create_draw_object_foreground("category_r", "icons", "right", 138.5, 19.5, 0, 1, 129)
 
     self.render_manager:create_text_object("text_item_heading", "- BRASS BULLET -", Colours.GREY2, 155, 102, 0, 1, 64, "centre")
-    self.render_manager:create_text_object("text_item_description", "A pretty weak bullet.", Colours.BROWN2, 155, 113, 0, 1, 64, "centre")
+    self.render_manager:create_text_object("text_item_description", "A pretty weak bullet.", Colours.BROWN2, 155, 115, 0, 0.75, 64, "centre")
 
 end
 

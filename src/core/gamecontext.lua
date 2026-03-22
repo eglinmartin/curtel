@@ -4,11 +4,6 @@ local Class = require("lib.class")
 local GameContext = Class{}
 
 
-local Colours = {
-    
-}
-
-
 function GameContext:init()
 end
 

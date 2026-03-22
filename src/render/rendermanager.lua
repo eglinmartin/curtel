@@ -180,7 +180,8 @@ function RenderManager:draw_foreground()
         love.graphics.setColor(self.shadow_colour)
         local offsets = {{2, 0}, {2, 1}, {2, 2}, {1, 2}, {0, 2}}
         for i = 1, #offsets do
-            local ox, oy = offsets[i][1], (offsets[i][2] - 6)
+            local ox = (offsets[i][1] * text_scale)
+            local oy = (offsets[i][2] * text_scale) - 6
             self:draw_characters(text_obj.text, text_obj.x + text_obj.dx + ox, text_obj.y + text_obj.dy + oy, text_scale, text_obj.align)
         end
     end
@@ -208,10 +209,15 @@ function RenderManager:draw_foreground()
         local offsets = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}}
 
         for i = 1, #offsets do
-            print(text_obj.scale + text_obj.dscale)
             local ox = (offsets[i][1] * text_scale)
             local oy = (offsets[i][2] * text_scale)
-            self:draw_characters(text_obj.text, text_obj.x + text_obj.dx + ox, text_obj.y + text_obj.dy + oy - 6, text_scale, text_obj.align)
+            self:draw_characters(
+                text_obj.text,
+                text_obj.x + text_obj.dx + ox,
+                text_obj.y + text_obj.dy + oy - 6,
+                text_scale,
+                text_obj.align
+            )
         end
 
         -- Draw text
