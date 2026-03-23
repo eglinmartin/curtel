@@ -27,7 +27,7 @@ function love.load()
 
     -- Initialize managers
     EVENT_MANAGER = EventManager()
-    INPUT_MANAGER = InputManager(EVENT_MANAGER)
+    INPUT_MANAGER = InputManager(EVENT_MANAGER, rs)
     RENDER_MANAGER = RenderManager(EVENT_MANAGER, rs)
     SCENE_MANAGER = SceneManager(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER)
 end

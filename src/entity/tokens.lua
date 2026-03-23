@@ -15,31 +15,31 @@ end
 
 Tokens = {
     -- Bullets
-    BULLET_BRONZE = Token('bullet_bronze', 'bullet', 'brass bullet', 2, 1, false, "A disappointingly weak bullet"),
-    BULLET_SILVER = Token('bullet_silver', 'bullet', 'silver bullet', 3, 2, false, ""),
-    BULLET_GOLD = Token('bullet_gold', 'bullet', 'gold bullet', 5, 3, false, ""),
-    BULLET_TITANIUM = Token('bullet_titanium', 'bullet', 'titanium bullet', 5, 5, false, ""),
-    BULLET_URANIUM = Token('bullet_uranium', 'bullet', 'uranium', 5, 10, false, ""),
+    BULLET_BRONZE = Token('bullet_bronze', 'bullet', 'Brass Round', 2, 1, false, "A dissapointingly weak hit (1 dmg)"),
+    BULLET_SILVER = Token('bullet_silver', 'bullet', 'Silver Round', 3, 2, false, "Description"),
+    BULLET_GOLD = Token('bullet_gold', 'bullet', 'Gold Round', 5, 3, false, "Description"),
+    BULLET_TITANIUM = Token('bullet_titanium', 'bullet', 'Titanium Round', 5, 5, false, "Description"),
+    BULLET_URANIUM = Token('bullet_uranium', 'bullet', 'Uranium Round', 5, 10, false, "Description"),
 
     -- Health
-    HEALTH_BEER = Token('health_beer', 'health', 'beer', 0, 10, false, ""),
-    HEALTH_WHISKY = Token('health_whisky', 'health', 'whisky', 0, 12, false, ""),
-    HEALTH_COFFEE = Token('health_coffee', 'health', 'coffee', 0, 12, false, ""),
-    HEALTH_BEANS = Token('health_beans', 'health', 'beans', 0, 10, false, ""),
-    HEALTH_BREAD = Token('health_bread', 'health', 'bread', 0, 10, false, ""),
-    HEALTH_BISCUITS = Token('health_biscuits', 'health', 'biscuits', 0, 10, false, ""),
-    HEALTH_MEDKIT = Token('health_medkit', 'health', 'medkit', 0, 10, false, ""),
-    HEALTH_CIGARETTES = Token('health_cigarettes', 'health', 'cigarettes', 0, 10, false, ""),
+    HEALTH_BEER = Token('health_beer', 'health', 'Beer', 0, 10, false, "Description"),
+    HEALTH_WHISKY = Token('health_whisky', 'health', 'Whisky', 0, 12, false, "Description"),
+    HEALTH_COFFEE = Token('health_coffee', 'health', 'Coffee', 0, 12, false, "Description"),
+    HEALTH_BEANS = Token('health_beans', 'health', 'Beans', 0, 10, false, "Description"),
+    HEALTH_BREAD = Token('health_bread', 'health', 'Bread', 0, 10, false, "Description"),
+    HEALTH_BISCUITS = Token('health_biscuits', 'health', 'Biscuits', 0, 10, false, "Description"),
+    HEALTH_MEDKIT = Token('health_medkit', 'health', 'Medkit', 0, 10, false, "Description"),
+    HEALTH_CIGARETTES = Token('health_cigarettes', 'health', 'Cigarettes', 0, 10, false, "Description"),
 
     -- Money
-    MONEY_DOLLARBILL = Token('money_dollarbill', 'money', 'dollarbill', 0, 10, false, ""),
-    MONEY_BAGOFCASH = Token('money_bagofcash', 'money', 'bagofcash', 0, 10, false, ""),
-    MONEY_PILEOFCASH = Token('money_pileofcash', 'money', 'pileofcash', 0, 10, false, ""),
-    MONEY_TREASURECHEST = Token('money_treasurechest', 'money', 'treasurechest', 0, 10, false, ""),
+    MONEY_DOLLARBILL = Token('money_dollarbill', 'money', 'Dollar Bill', 0, 10, false, "Description"),
+    MONEY_BAGOFCASH = Token('money_bagofcash', 'money', 'Bag of Cash', 0, 10, false, "Description"),
+    MONEY_PILEOFCASH = Token('money_pileofcash', 'money', 'Pile of Cash', 0, 10, false, "Description"),
+    MONEY_TREASURECHEST = Token('money_treasurechest', 'money', 'Treasure Chest', 0, 10, false, "Description"),
 
     -- Damage
-    DAMAGE_DYNAMITE = Token('damage_dynamite', 'damage', 'dynamite', 0, 10, false, ""),
-    DAMAGE_TNT = Token('damage_tnt', 'damage', 'tnt', 0, 10, false, ""),
+    DAMAGE_DYNAMITE = Token('damage_dynamite', 'damage', 'Dynamite', 0, 10, false, "Description"),
+    DAMAGE_TNT = Token('damage_tnt', 'damage', 'T.N.T', 0, 10, false, "Description"),
 }
 
 

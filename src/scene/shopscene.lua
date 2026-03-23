@@ -40,6 +40,7 @@ function ShopScene:enter()
     self.animation_title = 0
     self.animation_stock = 0
     self.stock_type = self.shop.stock_types.BULLETS
+    self.hovering = false
 
     self:update_sprites()
     
@@ -50,8 +51,44 @@ end
 
 
 function ShopScene:update(dt)
+    self.shop_stock_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
+
     self:animate_menu()
     self:animate_stock()
+
+    local found_hover = false
+    for i, v in ipairs(self.shop.stock[self.stock_type]) do
+        local x = self.shop_stock_xy[i][1]
+        local y = self.shop_stock_xy[i][2]
+        if self.input_manager.mx > x - 9 and self.input_manager.mx < x + 8 and self.input_manager.my > y - 9 and self.input_manager.my < y + 8 then
+
+            if not self.hovering then
+                self.render_manager:create_text_object("text_item_heading", v.item.name, v.colour, 155, 102, 0, 1, 64, "centre")
+                self.render_manager:create_text_object("text_item_description", v.item.description, Colours.BROWN2, 155, 115, 0, 0.75, 64, "centre")
+                self.render_manager.text_objects["text_item_heading"].dy = 2
+                self.render_manager.text_objects["text_item_description"].dy = 2
+                self.hovering = true
+            end
+
+            self.render_manager.draw_objects_foreground["shop_item" .. i].dscale = 0.1
+            self.render_manager.text_objects["shop_item_cost" .. i].dy = 1
+            if self.stock_type ==self.shop.stock_types.BULLETS then
+                self.render_manager.draw_objects_foreground["shop_item_back" .. i].dscale = 0.1
+            end
+
+            found_hover = true
+            break
+        end
+    end
+    if not found_hover then
+        if self.hovering then
+            self.render_manager:remove_text_object("text_item_heading")
+            self.render_manager:remove_text_object("text_item_description")
+        end
+        self.hovering = false
+    end
+    self.render_manager:create_text_object("debug", "FPS: " .. love.timer.getFPS(), Colours.BROWN2, 2, 2, 0, 0.75, 64, "left")
+
 end
 
 
@@ -119,7 +156,6 @@ function ShopScene:animate_stock()
         end
 
         -- Create shop stock
-        local shop_stock_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
         for i, v in ipairs(self.shop.stock[self.stock_type]) do
 
             -- Check keyframe
@@ -128,15 +164,15 @@ function ShopScene:animate_stock()
 
                 -- Draw bullets
                 if self.stock_type == self.shop.stock_types.BULLETS then
-                    self.render_manager:create_draw_object_foreground("shop_item_back" .. i, "token_backs", v.item.type, shop_stock_xy[i][1] - 0.5, shop_stock_xy[i][2] - 0.5, 0, 1, 130)
-                    self.render_manager:create_draw_object_foreground("shop_item" .. i, "tokens", v.item.tag, shop_stock_xy[i][1] - 0.5, shop_stock_xy[i][2] - 0.5, 0, 1, 131)
+                    self.render_manager:create_draw_object_foreground("shop_item_back" .. i, "token_backs", v.item.type, self.shop_stock_xy[i][1] - 0.5, self.shop_stock_xy[i][2] - 0.5, 0, 1, 130)
+                    self.render_manager:create_draw_object_foreground("shop_item" .. i, "tokens", v.item.tag, self.shop_stock_xy[i][1] - 0.5, self.shop_stock_xy[i][2] - 0.5, 0, 1, 131)
                     self.render_manager.draw_objects_foreground["shop_item_back" .. i].dx = 2 * self.stock_direction
                     self.render_manager.draw_objects_foreground["shop_item" .. i].dx = 2 * self.stock_direction
                     self.render_manager.draw_objects_foreground["shop_item" .. i].dscale = -0.25
                 
                 -- Draw cards
                 elseif self.stock_type == self.shop.stock_types.CARDS then
-                    self.render_manager:create_draw_object_foreground("shop_item" .. i, "cards_" .. v.item.suit, v.item.value, shop_stock_xy[i][1] - 0.5, shop_stock_xy[i][2] - 0.5, 0, 1, 131)
+                    self.render_manager:create_draw_object_foreground("shop_item" .. i, "cards_" .. v.item.suit, v.item.value, self.shop_stock_xy[i][1] - 0.5, self.shop_stock_xy[i][2] - 0.5, 0, 1, 131)
                     self.render_manager.draw_objects_foreground["shop_item" .. i].dx = 2 * self.stock_direction
                 end
             end
@@ -146,7 +182,7 @@ function ShopScene:animate_stock()
             if v.item.cost > self.player.money then
                 cost_colour = Colours.GREY3
             end
-            self.render_manager:create_text_object("shop_item_cost" .. i, "$" .. v.item.cost, cost_colour, shop_stock_xy[i][1], shop_stock_xy[i][2] + 12, 0, 1, 64, "centre")
+            self.render_manager:create_text_object("shop_item_cost" .. i, "$" .. v.item.cost, cost_colour, self.shop_stock_xy[i][1], self.shop_stock_xy[i][2] + 12, 0, 1, 64, "centre")
             self.render_manager.text_objects["shop_item_cost" .. i].dx = 2 * self.stock_direction
         end
 
@@ -170,6 +206,7 @@ function ShopScene:animate_stock()
     end
 end
 
+
 function ShopScene:update_sprites()
     self.render_manager:clear_screen()
 
@@ -178,10 +215,6 @@ function ShopScene:update_sprites()
 
     self.render_manager:create_draw_object_foreground("category_l", "icons", "left", 86.5, 19.5, 0, 1, 129)
     self.render_manager:create_draw_object_foreground("category_r", "icons", "right", 138.5, 19.5, 0, 1, 129)
-
-    -- self.render_manager:create_text_object("text_item_heading", "- BRASS BULLET -", Colours.GREY2, 155, 102, 0, 1, 64, "centre")
-    -- self.render_manager:create_text_object("text_item_description", "A pretty weak bullet.", Colours.BROWN2, 155, 115, 0, 0.75, 64, "centre")
-
 end
 
 

@@ -1,6 +1,7 @@
 local Class = require("lib.class")
 local Tokens = require("src.entity.tokens")
 local Cards = require("src.entity.cards")
+local Colours = require("src.render.colours")
 
 local Deck = require("src.entity.deck")
 local Shop = Class{}
@@ -13,8 +14,22 @@ local StockTypes = {
 }
 
 
-function ShopItem:init(item)
+function ShopItem:init(item, item_type)
     self.item = item
+    self.item_type = item_type
+
+    self.colour = Colours.GREY2
+    if self.item_type == StockTypes.BULLETS then
+        if self.item.type == 'money' then
+            self.colour = Colours.YELLOW1
+        elseif self.item.type == 'health' then
+            self.colour = Colours.GREEN2
+        elseif self.item.type == 'damage' then
+            self.colour = Colours.RED2
+        end
+    elseif self.item_type == StockTypes.CARDS then
+        self.colour = Colours.BROWN1
+    end
 end
 
 
@@ -36,7 +51,7 @@ function Shop:reroll_bullets()
     self.stock[StockTypes.BULLETS] = {}
     for i = 1, 6 do
         local random_key = token_keys[math.random(#token_keys)]
-        table.insert(self.stock[StockTypes.BULLETS], ShopItem(Tokens[random_key]))
+        table.insert(self.stock[StockTypes.BULLETS], ShopItem(Tokens[random_key], StockTypes.BULLETS))
     end
 end
 
@@ -55,7 +70,7 @@ function Shop:reroll_cards()
     end
     self.stock[StockTypes.CARDS] = {}
     for i = 1, 6 do
-        table.insert(self.stock[StockTypes.CARDS], ShopItem(Cards[card_keys[i]]))
+        table.insert(self.stock[StockTypes.CARDS], ShopItem(Cards[card_keys[i]], StockTypes.CARDS))
     end
 end
 
