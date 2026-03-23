@@ -54,16 +54,14 @@ jobs:
             zip -r game.love ./*.lua ./assets/ ./bin/ ./src/ ./lib/
   
         - name: Build macOS package
-          uses: love-actions/love-actions-macos-portable@v1
-          with:
-            love-ref: "11.5"
-            love-package: ./game.love
-            product-name: "Curtel"
-            output-folder: ./build/macos
-            icon-path: ./icon.icns
-            developer-id-application-base64: ""
-            developer-id-application-password: ""
-            team-id: ""
+          run: |
+            curl -L https://github.com/love2d/love/releases/download/11.5/love-11.5-macos.zip -o love.zip
+            unzip love.zip
+            cp game.love love.app/Contents/Resources/
+            cp ./icon.icns love.app/Contents/Resources/GameIcon.icns
+            mv love.app Curtel.app
+            mkdir -p ./build/macos
+            zip -r ./build/macos/Curtel.app.zip Curtel.app
   
         - name: Upload macOS artifact
           uses: actions/upload-artifact@v4
