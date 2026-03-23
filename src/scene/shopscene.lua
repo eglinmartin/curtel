@@ -72,6 +72,7 @@ function ShopScene:update(dt)
 
             self.render_manager.draw_objects_foreground["shop_item" .. i].dscale = 0.1
             self.render_manager.text_objects["shop_item_cost" .. i].dy = 1
+
             if self.stock_type ==self.shop.stock_types.BULLETS then
                 self.render_manager.draw_objects_foreground["shop_item_back" .. i].dscale = 0.1
             end
@@ -87,8 +88,6 @@ function ShopScene:update(dt)
         end
         self.hovering = false
     end
-    self.render_manager:create_text_object("debug", "FPS: " .. love.timer.getFPS(), Colours.BROWN2, 2, 2, 0, 0.75, 64, "left")
-
 end
 
 
