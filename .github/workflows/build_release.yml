@@ -36,42 +36,42 @@ jobs:
           path: ./build/windows/Curtel_x64.zip
 
   build-macos:
-    runs-on: macos-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-          
-      - name: Create icon
-        run: |
-          mkdir -p ./MyIcon.iconset
-          cp ./assets/icon_128x128.png ./MyIcon.iconset/icon_128x128.png
-          iconutil -c icns ./MyIcon.iconset -o ./icon.icns
-          certificate-base64: ""
-          certificate-password: ""
-          team-id: ""
-          apple-id: ""
-          apple-id-password: ""
-          
-      - name: Package .love file
-        run: |
-          zip -r game.love ./*.lua ./assets/ ./bin/ ./src/ ./lib/
-
-      - name: Build macOS package
-        uses: love-actions/love-actions-macos-portable@v1
-        with:
-          love-ref: "11.5"
-          love-package: ./game.love
-          product-name: "Curtel"
-          output-folder: ./build/macos
-          icon-path: ./icon.icns
-
-      - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: ./build/macos/Curtel.app.zip
+      runs-on: macos-latest
+      permissions:
+        contents: write
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+            
+        - name: Create icon
+          run: |
+            mkdir -p ./MyIcon.iconset
+            cp ./assets/icon_128x128.png ./MyIcon.iconset/icon_128x128.png
+            iconutil -c icns ./MyIcon.iconset -o ./icon.icns
+            
+        - name: Package .love file
+          run: |
+            zip -r game.love ./*.lua ./assets/ ./bin/ ./src/ ./lib/
+  
+        - name: Build macOS package
+          uses: love-actions/love-actions-macos-portable@v1
+          with:
+            love-ref: "11.5"
+            love-package: ./game.love
+            product-name: "Curtel"
+            output-folder: ./build/macos
+            icon-path: ./icon.icns
+            certificate-base64: ""
+            certificate-password: ""
+            team-id: ""
+            apple-id: ""
+            apple-id-password: ""
+  
+        - name: Upload macOS artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: macos-build
+            path: ./build/macos/Curtel.app.zip
 
   release:
     needs: [build-windows, build-macos]
