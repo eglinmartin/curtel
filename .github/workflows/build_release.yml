@@ -1,11 +1,12 @@
-name: Build for Windows
+name: Build for Windows and macOS
 on:
   push:
     branches:
       - master
   workflow_dispatch:
+
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     permissions:
       contents: write
@@ -27,6 +28,24 @@ jobs:
           output-folder: ./build/windows
           love-actions-folder: ./love-actions-windows
 
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: ./build/windows/Curtel_x64.zip
+
+  build-macos:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Package .love file
+        run: |
+          zip -r game.love ./*.lua ./assets/ ./bin/ ./src/ ./lib/
+
       - name: Build macOS package
         uses: love-actions/love-actions-macos-portable@v1
         with:
@@ -34,6 +53,23 @@ jobs:
           love-package: ./game.love
           product-name: "Curtel"
           output-folder: ./build/macos
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: ./build/macos/Curtel.app.zip
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
 
       - name: Delete old release and tag
         uses: actions/github-script@v7
@@ -47,7 +83,7 @@ jobs:
             try {
               await github.rest.git.deleteRef({ owner, repo, ref: 'tags/latest' });
             } catch {}
-      
+
       - name: Create Latest Release
         uses: softprops/action-gh-release@v2
         with:
@@ -56,5 +92,5 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./build/windows/Curtel_x64.zip
-            ./build/macos/Curtel.app.zip
+            ./artifacts/windows-build/Curtel_x64.zip
+            ./artifacts/macos-build/Curtel.app.zip
