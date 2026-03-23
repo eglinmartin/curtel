@@ -24,8 +24,16 @@ jobs:
           love-ref: "11.5"
           love-package: ./game.love
           product-name: "Curtel"
-          output-folder: ./build
+          output-folder: ./build/windows
           love-actions-folder: ./love-actions-windows
+
+      - name: Build macOS package
+        uses: love-actions/love-actions-macos-portable@v1
+        with:
+          love-ref: "11.5"
+          love-package: ./game.love
+          product-name: "Curtel"
+          output-folder: ./build/macos
 
       - name: Delete old release and tag
         uses: actions/github-script@v7
@@ -47,4 +55,6 @@ jobs:
           name: Latest Build
           draft: false
           prerelease: false
-          files: ./build/Curtel_x64.zip
+          files: |
+            ./build/windows/Curtel_x64.zip
+            ./build/macos/Curtel.app.zip
