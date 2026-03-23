@@ -59,6 +59,7 @@ jobs:
           love-package: ./game.love
           product-name: "Curtel"
           output-folder: ./build/macos
+          icon-path: ./icon.icns
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
