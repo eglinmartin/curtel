@@ -27,6 +27,7 @@ jobs:
           product-name: "Curtel"
           output-folder: ./build/windows
           love-actions-folder: ./love-actions-windows
+          icon-path: ./assets/icon_128x128.png
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -42,10 +43,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
           
-      - name: Create placeholder icon
+      - name: Create icon
         run: |
           mkdir -p ./MyIcon.iconset
-          sips -z 16 16 /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns --out ./MyIcon.iconset/icon_16x16.png
+          cp ./assets/icon_128x128.png ./MyIcon.iconset/icon_128x128.png
           iconutil -c icns ./MyIcon.iconset -o ./icon.icns
           
       - name: Package .love file
