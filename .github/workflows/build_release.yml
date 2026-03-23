@@ -101,5 +101,5 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./artifacts/windows-build/Curtel_x64.zip
-            ./artifacts/macos-build/Curtel.app.zip
+            ./artifacts/windows-build/curtel_windows_x64.zip
+            ./artifacts/macos-build/curtel_macos.zip
