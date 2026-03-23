@@ -61,11 +61,9 @@ jobs:
             product-name: "Curtel"
             output-folder: ./build/macos
             icon-path: ./icon.icns
-            certificate-base64: ""
-            certificate-password: ""
+            developer-id-application-base64: ""
+            developer-id-application-password: ""
             team-id: ""
-            apple-id: ""
-            apple-id-password: ""
   
         - name: Upload macOS artifact
           uses: actions/upload-artifact@v4
