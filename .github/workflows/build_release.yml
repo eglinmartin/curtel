@@ -48,6 +48,11 @@ jobs:
           mkdir -p ./MyIcon.iconset
           cp ./assets/icon_128x128.png ./MyIcon.iconset/icon_128x128.png
           iconutil -c icns ./MyIcon.iconset -o ./icon.icns
+          certificate-base64: ""
+          certificate-password: ""
+          team-id: ""
+          apple-id: ""
+          apple-id-password: ""
           
       - name: Package .love file
         run: |
