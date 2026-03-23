@@ -44,8 +44,9 @@ jobs:
           
       - name: Create placeholder icon
         run: |
-          mkdir -p ./assets
-          touch ./assets/icon.icns
+          mkdir -p ./MyIcon.iconset
+          sips -z 16 16 /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns --out ./MyIcon.iconset/icon_16x16.png
+          iconutil -c icns ./MyIcon.iconset -o ./icon.icns
           
       - name: Package .love file
         run: |
