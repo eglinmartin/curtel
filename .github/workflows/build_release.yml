@@ -41,7 +41,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+          
+      - name: Create placeholder icon
+        run: |
+          mkdir -p ./assets
+          touch ./assets/icon.icns
+          
       - name: Package .love file
         run: |
           zip -r game.love ./*.lua ./assets/ ./bin/ ./src/ ./lib/
