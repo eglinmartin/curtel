@@ -130,10 +130,10 @@
    { "name": "up", "from": 7, "to": 7, "direction": "forward", "color": "#000000ff" },
    { "name": "right", "from": 8, "to": 8, "direction": "forward", "color": "#000000ff" },
    { "name": "down", "from": 9, "to": 9, "direction": "forward", "color": "#000000ff" },
-   { "name": "token_bullet", "from": 10, "to": 10, "direction": "forward", "color": "#000000ff" },
-   { "name": "token_health", "from": 11, "to": 11, "direction": "forward", "color": "#000000ff" },
-   { "name": "token_explosive", "from": 12, "to": 12, "direction": "forward", "color": "#000000ff" },
-   { "name": "token_money", "from": 13, "to": 13, "direction": "forward", "color": "#000000ff" }
+   { "name": "bullet_bullet", "from": 10, "to": 10, "direction": "forward", "color": "#000000ff" },
+   { "name": "bullet_health", "from": 11, "to": 11, "direction": "forward", "color": "#000000ff" },
+   { "name": "bullet_damage", "from": 12, "to": 12, "direction": "forward", "color": "#000000ff" },
+   { "name": "bullet_money", "from": 13, "to": 13, "direction": "forward", "color": "#000000ff" }
   ],
   "layers": [
    { "name": "Layer 1", "opacity": 255, "blendMode": "normal" }

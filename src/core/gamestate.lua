@@ -2,17 +2,17 @@ local Class = require("lib.class")
 
 local Deck = require("src.entity.deck")
 local Player = require("src.entity.player")
-local Tokens = require("src.entity.tokens")
+local Bullets = require("src.entity.bullets")
 
 local GameState = Class{}
 
 
 function GameState:init()
-    self.tokens = Tokens
+    self.bullets = Bullets
 
     self.player = Player()
     self.player.deck = Deck(self.player)
-    self.player.tokens = {Tokens.BULLET_BRONZE, Tokens.BULLET_SILVER, Tokens.BULLET_GOLD, Tokens.BULLET_TITANIUM, Tokens.HEALTH_BEER, Tokens.HEALTH_WHISKY}
+    self.player.bullets = {Bullets.BULLET_BRONZE, Bullets.BULLET_SILVER, Bullets.BULLET_GOLD, Bullets.BULLET_TITANIUM, Bullets.HEALTH_BEER, Bullets.HEALTH_WHISKY}
 
 end
 

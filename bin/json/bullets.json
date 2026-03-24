@@ -1,5 +1,5 @@
 { "frames": {
-   "tokens 0.aseprite": {
+   "bullets 0.aseprite": {
     "frame": { "x": 1, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -7,7 +7,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 1.aseprite": {
+   "bullets 1.aseprite": {
     "frame": { "x": 21, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -15,7 +15,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 2.aseprite": {
+   "bullets 2.aseprite": {
     "frame": { "x": 41, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -23,7 +23,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 3.aseprite": {
+   "bullets 3.aseprite": {
     "frame": { "x": 61, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -31,7 +31,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 4.aseprite": {
+   "bullets 4.aseprite": {
     "frame": { "x": 81, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -39,7 +39,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 5.aseprite": {
+   "bullets 5.aseprite": {
     "frame": { "x": 101, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -47,7 +47,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 6.aseprite": {
+   "bullets 6.aseprite": {
     "frame": { "x": 121, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -55,7 +55,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 7.aseprite": {
+   "bullets 7.aseprite": {
     "frame": { "x": 141, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -63,7 +63,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 8.aseprite": {
+   "bullets 8.aseprite": {
     "frame": { "x": 161, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -71,7 +71,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 9.aseprite": {
+   "bullets 9.aseprite": {
     "frame": { "x": 181, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -79,7 +79,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 10.aseprite": {
+   "bullets 10.aseprite": {
     "frame": { "x": 201, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -87,7 +87,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 11.aseprite": {
+   "bullets 11.aseprite": {
     "frame": { "x": 221, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -95,7 +95,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 12.aseprite": {
+   "bullets 12.aseprite": {
     "frame": { "x": 241, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -103,7 +103,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 13.aseprite": {
+   "bullets 13.aseprite": {
     "frame": { "x": 261, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -111,7 +111,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 14.aseprite": {
+   "bullets 14.aseprite": {
     "frame": { "x": 281, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -119,7 +119,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 15.aseprite": {
+   "bullets 15.aseprite": {
     "frame": { "x": 301, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -127,7 +127,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 16.aseprite": {
+   "bullets 16.aseprite": {
     "frame": { "x": 321, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -135,7 +135,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 17.aseprite": {
+   "bullets 17.aseprite": {
     "frame": { "x": 341, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -143,7 +143,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 18.aseprite": {
+   "bullets 18.aseprite": {
     "frame": { "x": 361, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -151,7 +151,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 19.aseprite": {
+   "bullets 19.aseprite": {
     "frame": { "x": 381, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -159,7 +159,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 20.aseprite": {
+   "bullets 20.aseprite": {
     "frame": { "x": 401, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -167,7 +167,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 21.aseprite": {
+   "bullets 21.aseprite": {
     "frame": { "x": 421, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -175,7 +175,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 22.aseprite": {
+   "bullets 22.aseprite": {
     "frame": { "x": 441, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -183,7 +183,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 23.aseprite": {
+   "bullets 23.aseprite": {
     "frame": { "x": 461, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -191,7 +191,7 @@
     "sourceSize": { "w": 19, "h": 19 },
     "duration": 100
    },
-   "tokens 24.aseprite": {
+   "bullets 24.aseprite": {
     "frame": { "x": 481, "y": 1, "w": 19, "h": 19 },
     "rotated": false,
     "trimmed": false,
@@ -203,7 +203,7 @@
  "meta": {
   "app": "https://www.aseprite.org/",
   "version": "1.3.7-x64",
-  "image": "tokens.png",
+  "image": "bullets.png",
   "format": "RGBA8888",
   "size": { "w": 501, "h": 21 },
   "scale": "1",
@@ -226,7 +226,11 @@
    { "name": "money_pileofcash", "from": 15, "to": 15, "direction": "forward", "color": "#000000ff" },
    { "name": "money_treasurechest", "from": 16, "to": 16, "direction": "forward", "color": "#000000ff" },
    { "name": "damage_dynamite", "from": 18, "to": 18, "direction": "forward", "color": "#000000ff" },
-   { "name": "damage_tnt", "from": 22, "to": 22, "direction": "forward", "color": "#000000ff" }
+   { "name": "damage_bomb", "from": 19, "to": 19, "direction": "forward", "color": "#000000ff" },
+   { "name": "damage_gunpowder", "from": 20, "to": 20, "direction": "forward", "color": "#000000ff" },
+   { "name": "damage_shotgun", "from": 21, "to": 21, "direction": "forward", "color": "#000000ff" },
+   { "name": "damage_tnt", "from": 22, "to": 22, "direction": "forward", "color": "#000000ff" },
+   { "name": "damage_anvil", "from": 23, "to": 23, "direction": "forward", "color": "#000000ff" }
   ],
   "layers": [
    { "name": "Layer 1", "opacity": 255, "blendMode": "normal" }

@@ -163,8 +163,8 @@ function ShopScene:animate_stock()
 
                 -- Draw bullets
                 if self.stock_type == self.shop.stock_types.BULLETS then
-                    self.render_manager:create_draw_object_foreground("shop_item_back" .. i, "token_backs", v.item.type, self.shop_stock_xy[i][1] - 0.5, self.shop_stock_xy[i][2] - 0.5, 0, 1, 130)
-                    self.render_manager:create_draw_object_foreground("shop_item" .. i, "tokens", v.item.tag, self.shop_stock_xy[i][1] - 0.5, self.shop_stock_xy[i][2] - 0.5, 0, 1, 131)
+                    self.render_manager:create_draw_object_foreground("shop_item_back" .. i, "bullet_backs", v.item.type, self.shop_stock_xy[i][1] - 0.5, self.shop_stock_xy[i][2] - 0.5, 0, 1, 130)
+                    self.render_manager:create_draw_object_foreground("shop_item" .. i, "bullets", v.item.tag, self.shop_stock_xy[i][1] - 0.5, self.shop_stock_xy[i][2] - 0.5, 0, 1, 131)
                     self.render_manager.draw_objects_foreground["shop_item_back" .. i].dx = 2 * self.stock_direction
                     self.render_manager.draw_objects_foreground["shop_item" .. i].dx = 2 * self.stock_direction
                     self.render_manager.draw_objects_foreground["shop_item" .. i].dscale = -0.25
@@ -195,10 +195,10 @@ function ShopScene:animate_stock()
 
             local chamber_xy = {{0, -23}, {20, -11}, {20, 11},{0, 23}, {-20, 11}, {-20, -11}}
             for i, v in ipairs(chamber_xy) do
-                self.render_manager:create_draw_object_foreground("player_token_back" .. i, "token_backs", self.player.tokens[i].type, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 130)
-                self.render_manager:create_draw_object_foreground("player_token" .. i, "tokens", self.player.tokens[i].tag, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 131)
-                self.render_manager.draw_objects_foreground["player_token_back" .. i].dx = 2 * self.stock_direction
-                self.render_manager.draw_objects_foreground["player_token" .. i].dx = 2 * self.stock_direction
+                self.render_manager:create_draw_object_foreground("player_bullet_back" .. i, "bullet_backs", self.player.bullets[i].type, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 130)
+                self.render_manager:create_draw_object_foreground("player_bullet" .. i, "bullets", self.player.bullets[i].tag, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 131)
+                self.render_manager.draw_objects_foreground["player_bullet_back" .. i].dx = 2 * self.stock_direction
+                self.render_manager.draw_objects_foreground["player_bullet" .. i].dx = 2 * self.stock_direction
             end
 
         end
@@ -223,8 +223,8 @@ function ShopScene:switch_stock()
         self.render_manager:remove_draw_object_foreground("barrel_base")
         self.render_manager:remove_draw_object_foreground("barrel_chambers")
         for i = 1, #self.shop.stock["bullets"] do
-            self.render_manager:remove_draw_object_foreground("player_token" .. i)
-            self.render_manager:remove_draw_object_foreground("player_token_back" .. i)
+            self.render_manager:remove_draw_object_foreground("player_bullet" .. i)
+            self.render_manager:remove_draw_object_foreground("player_bullet_back" .. i)
             self.render_manager:remove_draw_object_foreground("shop_item" .. i)
             self.render_manager:remove_draw_object_foreground("shop_item_back" .. i)
             self.render_manager:remove_text_object("shop_item_cost" .. i)

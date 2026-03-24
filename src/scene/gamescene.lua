@@ -50,13 +50,13 @@ function GameScene:enter()
         self.render_manager.text_objects["player_money"].dy = 4
         self.render_manager.text_objects["player_deck"].dy = 4
 
-        if #self.player.tokens > 0 then
-            self.render_manager.draw_objects_foreground["player_token_icon_1"].dy = 4
-            self.render_manager.draw_objects_foreground["player_token_icon_2"].dy = 4
-            self.render_manager.draw_objects_foreground["player_token_icon_3"].dy = 4
-            self.render_manager.draw_objects_foreground["player_token_icon_4"].dy = 4
-            self.render_manager.draw_objects_foreground["player_token_icon_5"].dy = 4
-            self.render_manager.draw_objects_foreground["player_token_icon_6"].dy = 4
+        if #self.player.bullets > 0 then
+            self.render_manager.draw_objects_foreground["player_bullet_icon_1"].dy = 4
+            self.render_manager.draw_objects_foreground["player_bullet_icon_2"].dy = 4
+            self.render_manager.draw_objects_foreground["player_bullet_icon_3"].dy = 4
+            self.render_manager.draw_objects_foreground["player_bullet_icon_4"].dy = 4
+            self.render_manager.draw_objects_foreground["player_bullet_icon_5"].dy = 4
+            self.render_manager.draw_objects_foreground["player_bullet_icon_6"].dy = 4
         end
     end
 
@@ -158,13 +158,13 @@ function GameScene:update_sprites()
         self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 47, 0, 1, 64, "left")
         self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 58, 0, 1, 64, "left")
 
-        if #self.player.tokens > 0 then
-            self.render_manager:create_draw_object_foreground("player_token_icon_1", "icons", "token_" .. self.player.tokens[1].type, 81.5, 65.5, 0, 1, 129)
-            self.render_manager:create_draw_object_foreground("player_token_icon_2", "icons", "token_" .. self.player.tokens[2].type, 88.5, 70.5, 0, 1, 129)
-            self.render_manager:create_draw_object_foreground("player_token_icon_3", "icons", "token_" .. self.player.tokens[3].type, 88.5, 77.5, 0, 1, 129)
-            self.render_manager:create_draw_object_foreground("player_token_icon_4", "icons", "token_" .. self.player.tokens[4].type, 81.5, 82.5, 0, 1, 129)
-            self.render_manager:create_draw_object_foreground("player_token_icon_5", "icons", "token_" .. self.player.tokens[5].type, 74.5, 77.5, 0, 1, 129)
-            self.render_manager:create_draw_object_foreground("player_token_icon_6", "icons", "token_" .. self.player.tokens[6].type, 74.5, 70.5, 0, 1, 129)
+        if #self.player.bullets > 0 then
+            self.render_manager:create_draw_object_foreground("player_bullet_icon_1", "icons", "bullet_" .. self.player.bullets[1].type, 81.5, 65.5, 0, 1, 129)
+            self.render_manager:create_draw_object_foreground("player_bullet_icon_2", "icons", "bullet_" .. self.player.bullets[2].type, 88.5, 70.5, 0, 1, 129)
+            self.render_manager:create_draw_object_foreground("player_bullet_icon_3", "icons", "bullet_" .. self.player.bullets[3].type, 88.5, 77.5, 0, 1, 129)
+            self.render_manager:create_draw_object_foreground("player_bullet_icon_4", "icons", "bullet_" .. self.player.bullets[4].type, 81.5, 82.5, 0, 1, 129)
+            self.render_manager:create_draw_object_foreground("player_bullet_icon_5", "icons", "bullet_" .. self.player.bullets[5].type, 74.5, 77.5, 0, 1, 129)
+            self.render_manager:create_draw_object_foreground("player_bullet_icon_6", "icons", "bullet_" .. self.player.bullets[6].type, 74.5, 70.5, 0, 1, 129)
         end
     end
 

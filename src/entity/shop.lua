@@ -1,5 +1,5 @@
 local Class = require("lib.class")
-local Tokens = require("src.entity.tokens")
+local Bullets = require("src.entity.bullets")
 local Cards = require("src.entity.cards")
 local Colours = require("src.render.colours")
 
@@ -43,15 +43,15 @@ end
 
 
 function Shop:reroll_bullets()
-    local token_keys = {}
-    for k, _ in pairs(Tokens) do
-        table.insert(token_keys, k)
+    local bullet_keys = {}
+    for k, _ in pairs(Bullets) do
+        table.insert(bullet_keys, k)
     end
 
     self.stock[StockTypes.BULLETS] = {}
     for i = 1, 6 do
-        local random_key = token_keys[math.random(#token_keys)]
-        table.insert(self.stock[StockTypes.BULLETS], ShopItem(Tokens[random_key], StockTypes.BULLETS))
+        local random_key = bullet_keys[math.random(#bullet_keys)]
+        table.insert(self.stock[StockTypes.BULLETS], ShopItem(Bullets[random_key], StockTypes.BULLETS))
     end
 end
 

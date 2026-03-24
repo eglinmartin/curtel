@@ -20,6 +20,7 @@ rs.setMode(1920, 1080, {fullscreen = true})
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
     math.randomseed(os.time())
+    love.window.setIcon(love.image.newImageData("assets/icon_128x128.png"))
 
     -- Initialize game loop
     GAME_CONTEXT = GameContext()
