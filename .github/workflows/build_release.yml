@@ -27,45 +27,47 @@ jobs:
           product-name: "Curtel"
           output-folder: ./build/windows
           love-actions-folder: ./love-actions-windows
+          icon-path: ./assets/icon_128x128.png
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: ./build/windows/Curtel_x64.zip
+          path: ./build/windows/curtel_x64.zip
 
   build-macos:
-    runs-on: macos-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-          
-      - name: Create placeholder icon
-        run: |
-          mkdir -p ./MyIcon.iconset
-          sips -z 16 16 /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/GenericApplicationIcon.icns --out ./MyIcon.iconset/icon_16x16.png
-          iconutil -c icns ./MyIcon.iconset -o ./icon.icns
-          
-      - name: Package .love file
-        run: |
-          zip -r game.love ./*.lua ./assets/ ./bin/ ./src/ ./lib/
-
-      - name: Build macOS package
-        uses: love-actions/love-actions-macos-portable@v1
-        with:
-          love-ref: "11.5"
-          love-package: ./game.love
-          product-name: "Curtel"
-          output-folder: ./build/macos
-          icon-path: ./icon.icns
-
-      - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: ./build/macos/Curtel.app.zip
+      runs-on: macos-latest
+      permissions:
+        contents: write
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+            
+        - name: Create icon
+          run: |
+            mkdir -p ./MyIcon.iconset
+            cp ./assets/icon_128x128.png ./MyIcon.iconset/icon_128x128.png
+            iconutil -c icns ./MyIcon.iconset -o ./icon.icns
+            
+        - name: Package .love file
+          run: |
+            zip -r game.love ./*.lua ./assets/ ./bin/ ./src/ ./lib/
+  
+        - name: Build macOS package
+          run: |
+            curl -L https://github.com/love2d/love/releases/download/11.5/love-11.5-macos.zip -o love.zip
+            unzip love.zip
+            cp game.love love.app/Contents/Resources/
+            cp ./icon.icns love.app/Contents/Resources/GameIcon.icns
+            mv love.app Curtel.app
+            mkdir -p ./build/macos
+            zip -r ./build/macos/curtel_macos.zip Curtel.app
+  
+        - name: Upload macOS artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: macos-build
+            path: ./build/macos/curtel_macos.zip
 
   release:
     needs: [build-windows, build-macos]
@@ -99,5 +101,5 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./artifacts/windows-build/Curtel_x64.zip
-            ./artifacts/macos-build/Curtel.app.zip
+            ./artifacts/windows-build/curtel_x64.zip
+            ./artifacts/macos-build/curtel_macos.zip
