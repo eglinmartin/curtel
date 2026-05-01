@@ -22,14 +22,17 @@ function love.load()
     math.randomseed(os.time())
     love.window.setIcon(love.image.newImageData("assets/icon_128x128.png"))
 
-    -- Initialize game loop
+    -- Initialize game constants
     GAME_CONTEXT = GameContext()
-    GAME_STATE = GameState(GAME_CONTEXT)
 
     -- Initialize managers
     EVENT_MANAGER = EventManager()
     INPUT_MANAGER = InputManager(EVENT_MANAGER, rs)
     RENDER_MANAGER = RenderManager(EVENT_MANAGER, rs)
+
+    -- Initialize game state
+    GAME_STATE = GameState(GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER)
+
     SCENE_MANAGER = SceneManager(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER)
 end
 
@@ -44,15 +47,25 @@ function love.keypressed(key)
 end
 
 
+function love.mousepressed(x, y, button)
+    INPUT_MANAGER:mousepressed(x, y, button)
+end
+
+
+function love.mousereleased(x, y, button)
+    INPUT_MANAGER:mousereleased(x, y, button)
+end
+
+
 function love.update(dt)
     -- Update game loop
     GAME_CONTEXT:update(dt)
     GAME_STATE:update(dt)
     
     -- Update managers
+    INPUT_MANAGER:update(dt)
     RENDER_MANAGER:update(dt)
     SCENE_MANAGER:update(dt)
-    INPUT_MANAGER:update(dt)
 end
 
 

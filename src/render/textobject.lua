@@ -31,6 +31,14 @@ function TextObject:update(dt)
 end
 
 
+function TextObject:animate(args)
+    if args.dx then self.dx = args.dx end
+    if args.dy then self.dy = args.dy end
+    if args.dscale then self.dscale = args.dscale end
+    if args.drot then self.drot = args.drot end
+end
+
+
 function TextObject:return_to_xy(d, dt)
     local decay = 16
     d = d * math.exp(-decay * dt)

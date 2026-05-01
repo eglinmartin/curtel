@@ -12,13 +12,21 @@ function DrawObject:init(name, sprite, x, y, scale, rot, depth)
     self.x = x
     self.y = y
     self.scale = scale
-    self.rot = rot
+    self.rot = rot * (math.pi / 180)
 
     -- Create theoretical location parameters
     self.dx = 0
     self.dy = 0
     self.dscale = 0
     self.drot = 0
+end
+
+
+function DrawObject:animate(args)
+    if args.dx then self.dx = args.dx end
+    if args.dy then self.dy = args.dy end
+    if args.dscale then self.dscale = args.dscale end
+    if args.drot then self.drot = args.drot end
 end
 
 

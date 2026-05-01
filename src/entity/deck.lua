@@ -5,7 +5,6 @@ local Deck = Class{}
 
 
 
-
 function Deck:init(owner)
     -- Create pack of cards
     self.owner = owner

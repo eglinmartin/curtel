@@ -43,7 +43,6 @@ function SceneManager:switch_scene(new_scene)
     end
 
     self.current_scene = new_scene
-
     if self.current_scene.enter then
         self.current_scene:enter()
     end
@@ -52,7 +51,7 @@ end
 
 function SceneManager:update(dt)
     if self.current_scene and self.current_scene.update then
-        self.current_scene:update(dt)
+        self.current_scene:update(dt, self.input_manager.mx, self.input_manager.my, self.input_manager.mouse_down, self.input_manager.mouse_pressed)
     end
 end
 
