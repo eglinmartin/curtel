@@ -5,6 +5,7 @@ local GameScene = Class{}
 local Colours = require("src.render.colours")
 local Deck = require("src.entity.deck")
 local Enemy = require("src.entity.enemy")
+local Entity = require("src.entity.entity")
 local Item = require("src.entity.item")
 
 
@@ -17,9 +18,10 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     self.entities = {}
 
     self.player = self.game_state.player
-    self.player.x = 82
-    self.player.y = 103
     self.entities["player"] = self.player
+
+    self.selection_cursor = Entity(10, 10)
+    self.entities["selection_cursor"] = self.selection_cursor
 
     -- Set animation timers
     self.animation_dealing = 0
@@ -29,10 +31,15 @@ end
 function GameScene:enter()
     self.render_manager:clear_screen()
     
+    self.render_manager:create_draw_object_foreground("selection_cursor", "icons", "down", self.selection_cursor.x, self.selection_cursor.y, 0, 1, 128)
+    
     self:setup_events()
     self.event_manager:trigger(self.event_manager.events.SHUFFLEDECK)
 
     self:create_sprites()
+    
+    self.player.x = 82
+    self.player.y = 103
     self.player.hand = {}
 
     self.render_manager:set_shadow_colour(Colours.GREEN5)
@@ -68,6 +75,7 @@ function GameScene:setup_events()
             if self.player.selected_card then
                 self.render_manager:create_draw_object_foreground("player_card_large", "cards_large_" .. self.player.selected_card.suit, self.player.selected_card.value, 88.5, 52.5, math.random(-5, 5), 1, 128)
                 self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.1})
+                self.render_manager.draw_objects_foreground["selection_cursor"]:animate({dy=-2})
             end
         end
     )
@@ -178,10 +186,15 @@ end
 
 
 function GameScene:update(dt, mx, my, md, mp)
-    self:animate_dealing()
     for _, entity in pairs(self.entities) do
         entity:update(dt, mx, my, md, mp)
     end
+
+    -- Move cursor back to neutral, off-screen position
+    self.selection_cursor:move(-10, -10)
+
+    -- Perform animations
+    self:animate_dealing()
 
     -- Handle card selection
     local hovered = false
@@ -194,15 +207,18 @@ function GameScene:update(dt, mx, my, md, mp)
                 self.event_manager:trigger(self.event_manager.events.SELECTCARD)
             end
             self.render_manager.draw_objects_foreground["player_card_".. i]:animate({dscale=0.2})
+            self.selection_cursor:move(self.entities["player_card_".. i].x, self.entities["player_card_".. i].y-18)
             break
         end
     end
 
+    -- If no cards are hovered over, deselect if selected
     if not hovered and self.player.selected_card then
         self.event_manager:trigger(self.event_manager.events.DESELECTCARD)
     end
 
-    
+    -- Move the cursor's draw object to reflect cursor change
+    self.render_manager.draw_objects_foreground["selection_cursor"]:move(self.selection_cursor.x, self.selection_cursor.y)
 end
 
 

@@ -22,6 +22,12 @@ function DrawObject:init(name, sprite, x, y, scale, rot, depth)
 end
 
 
+function DrawObject:move(x, y)
+    self.x = x
+    self.y = y
+end
+
+
 function DrawObject:animate(args)
     if args.dx then self.dx = args.dx end
     if args.dy then self.dy = args.dy end

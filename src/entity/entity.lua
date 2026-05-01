@@ -19,6 +19,12 @@ function Entity:init(x, y, w, h)
 end
 
 
+function Entity:move(x, y)
+    self.x = x
+    self.y = y
+end
+
+
 function Entity:contains_point(mx, my)
     local half_w = self.w / 2
     local half_h = self.h / 2
