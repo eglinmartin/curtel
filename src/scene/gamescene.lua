@@ -210,6 +210,9 @@ function GameScene:animate_card_hovering(dt)
         end
     end
     self.hovering_card = hovering
+    if not hovering then
+        self.player.selected_card = nil
+    end
 end
 
 
