@@ -48,14 +48,14 @@ end
 
 function InputManager:mousepressed(x, y, button)
     if button == 1 then
-        self.event_manager:trigger(self.event_manager.events.MOUSE_PRESSED, x, y)
+        self.event_manager:trigger(self.event_manager.events.MOUSEPRESSED, x, y)
     end
 end
 
 
 function InputManager:mousereleased(x, y, button)
     if button == 1 then
-        self.event_manager:trigger(self.event_manager.events.MOUSE_RELEASED, x, y)
+        self.event_manager:trigger(self.event_manager.events.MOUSERELEASED, x, y)
     end
 end
 

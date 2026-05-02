@@ -13,7 +13,8 @@ local Events = {
     DESELECTCARD = 'deselect the selected card',
     SWITCHSTOCK_LEFT = 'switch stock (left)',
     SWITCHSTOCK_RIGHT = 'switch stock (right)',
-    TOGGLE_FULLSCREEN = 'toggle fullscreen'
+    TOGGLE_FULLSCREEN = 'toggle fullscreen',
+    MOUSEPRESSED = 'mouse pressed'
 }
 
 

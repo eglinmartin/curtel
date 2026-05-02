@@ -24,6 +24,7 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     self.entities["selection_cursor"] = self.selection_cursor
 
     -- Set animation timers
+    self.hovering_card = false
     self.animation_dealing = 0
 end
 
@@ -74,8 +75,7 @@ function GameScene:setup_events()
         self.event_manager.events.SELECTCARD, self, function()
             if self.player.selected_card then
                 self.render_manager:create_draw_object_foreground("player_card_large", "cards_large_" .. self.player.selected_card.suit, self.player.selected_card.value, 88.5, 52.5, math.random(-5, 5), 1, 128)
-                self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.1})
-                self.render_manager.draw_objects_foreground["selection_cursor"]:animate({dy=-2})
+                self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.15})
             end
         end
     )
@@ -86,6 +86,15 @@ function GameScene:setup_events()
             self.player.selected_card = nil
             if self.render_manager.draw_objects_foreground["player_card_large"] then
                 self.render_manager:remove_draw_object_foreground("player_card_large")
+            end
+        end
+    )
+
+    -- Mouse press event
+    self.event_manager:on(
+        self.event_manager.events.MOUSEPRESSED, self, function()
+            if self.hovering_card then
+                self.event_manager:trigger(self.event_manager.events.SELECTCARD)
             end
         end
     )
@@ -185,6 +194,25 @@ function GameScene:animate_dealing(dt)
 end
 
 
+function GameScene:animate_card_hovering(dt)
+    local hovering = false
+    for i = #self.player.hand, 1, -1 do
+        if self.entities["player_card_".. i].hovered then
+            local card = self.entities["player_card_".. i]
+            if self.player.selected_card ~= card.item then
+                self.render_manager.draw_objects_foreground["selection_cursor"]:animate({dy=-2})
+                self.player.selected_card = card.item
+            end
+            hovering = true
+            self.render_manager.draw_objects_foreground["player_card_".. i]:animate({dscale=0.2})
+            self.selection_cursor:move(self.entities["player_card_".. i].x, self.entities["player_card_".. i].y-18)
+            break
+        end
+    end
+    self.hovering_card = hovering
+end
+
+
 function GameScene:update(dt, mx, my, md, mp)
     for _, entity in pairs(self.entities) do
         entity:update(dt, mx, my, md, mp)
@@ -195,27 +223,7 @@ function GameScene:update(dt, mx, my, md, mp)
 
     -- Perform animations
     self:animate_dealing()
-
-    -- Handle card selection
-    local hovered = false
-    for i = #self.player.hand, 1, -1 do
-        if self.entities["player_card_".. i].hovered then
-            hovered = true
-            local card = self.entities["player_card_".. i].item
-            if self.player.selected_card ~= card then
-                self.player.selected_card = card
-                self.event_manager:trigger(self.event_manager.events.SELECTCARD)
-            end
-            self.render_manager.draw_objects_foreground["player_card_".. i]:animate({dscale=0.2})
-            self.selection_cursor:move(self.entities["player_card_".. i].x, self.entities["player_card_".. i].y-18)
-            break
-        end
-    end
-
-    -- If no cards are hovered over, deselect if selected
-    if not hovered and self.player.selected_card then
-        self.event_manager:trigger(self.event_manager.events.DESELECTCARD)
-    end
+    self:animate_card_hovering()
 
     -- Move the cursor's draw object to reflect cursor change
     self.render_manager.draw_objects_foreground["selection_cursor"]:move(self.selection_cursor.x, self.selection_cursor.y)
