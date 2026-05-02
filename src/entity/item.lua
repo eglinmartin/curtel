@@ -9,20 +9,9 @@ States = {
 }
 
 
-function Item:init(item, x, y)
-    self.x = x
-    self.y = y
-    self.item = item
-    Entity.init(self, self.x, self.y, 19, 19)
-
-    self.health = 10
-    self.max_health = 10
-    self.money = 10
-
-    self.hand_size = 3
-    self.hand = {}
-    
-    self.selected = false
+function Item:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, args)
+    Entity.init(self, id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, args)
+    self.item = args.item
 end
 
 

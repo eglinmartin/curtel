@@ -1,4 +1,5 @@
 local Class = require("lib.class")
+local Entity = require("src.entity.entity")
 
 local InputManager = Class{}
 

@@ -76,7 +76,7 @@ function RenderManager:draw(rs)
 
     self:draw_background()
     self:draw_foreground()
-
+    
     rs.pop()
 end
 
@@ -187,19 +187,6 @@ function RenderManager:draw_foreground()
     end
     love.graphics.setColor(1, 1, 1, 1)
 
-    -- Draw foreground layer (sprites)
-    for _, draw_obj in ipairs(draw_list) do
-        draw_obj.sprite:draw(
-            draw_obj.x + draw_obj.dx,
-            draw_obj.y + draw_obj.dy,
-            draw_obj.rot + draw_obj.drot,
-            draw_obj.scale + draw_obj.dscale,
-            draw_obj.scale + draw_obj.dscale,
-            draw_obj.sprite:getWidth() / 2,
-            draw_obj.sprite:getHeight() / 2
-        )
-    end
-
     -- Draw foreground layer (text)
     for _, text_obj in ipairs(draw_text_list) do
         local text_scale = text_obj.scale + text_obj.dscale
@@ -224,6 +211,21 @@ function RenderManager:draw_foreground()
         love.graphics.setColor(text_obj.colour)
         self:draw_characters(text_obj.text, text_obj.x + text_obj.dx, text_obj.y + text_obj.dy - 6, text_scale, text_obj.align)
     end
+
+    -- Draw foreground layer (sprites)
+    love.graphics.setColor(1, 1, 1, 1)
+    for _, draw_obj in ipairs(draw_list) do
+        draw_obj.sprite:draw(
+            draw_obj.x + draw_obj.dx,
+            draw_obj.y + draw_obj.dy,
+            draw_obj.rot + draw_obj.drot,
+            draw_obj.scale + draw_obj.dscale,
+            draw_obj.scale + draw_obj.dscale,
+            draw_obj.sprite:getWidth() / 2,
+            draw_obj.sprite:getHeight() / 2
+        )
+    end
+
     love.graphics.setColor(1, 1, 1, 1)
 end
 

@@ -9,10 +9,8 @@ States = {
 }
 
 
-function Player:init(x, y, render_manager)
-    self.x = x
-    self.y = y
-    Entity.init(self, self.x, self.y, 20, 32)
+function Player:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, args)
+    Entity.init(self, id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, args)
 
     self.state = States.IDLE
 
@@ -23,8 +21,6 @@ function Player:init(x, y, render_manager)
     self.hand_size = 3
     self.hand = {}
     self.selected_card = nil
-    
-    render_manager:create_draw_object_foreground("player", "player", "idle", self.x, self.y, 0, 1, 128)
 end
 
 

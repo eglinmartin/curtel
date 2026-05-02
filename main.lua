@@ -21,6 +21,7 @@ function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
     math.randomseed(os.time())
     love.window.setIcon(love.image.newImageData("assets/icon_128x128.png"))
+    love.mouse.setVisible(false)
 
     -- Initialize game constants
     GAME_CONTEXT = GameContext()
