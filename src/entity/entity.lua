@@ -16,9 +16,9 @@ function Entity:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANA
     -- Create physical positions
     if args.x then self.x = args.x or 0 end
     if args.y then self.y = args.y or 0 end
-    if args.w then self.width = args.w end
-    if args.h then self.height = args.h end
-    if args.s then self.scale = args.s end
+    if args.w then self.width = args.w or 0 end
+    if args.h then self.height = args.h or 0 end
+    if args.s then self.scale = args.s or 1 end
     if args.r then self.rotation = args.r * (math.pi / 180) end
 
     -- Create theoretical positions
@@ -29,6 +29,9 @@ function Entity:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANA
     self.shadow_x = self.x
     self.shadow_y = self.y
     
+    -- Get interaction information
+    if args.draggable then self.draggable = args.draggable or false end
+
     -- Get sprite information
     if args.sprite_sheet then self.sprite_sheet = args.sprite_sheet end
     if args.sprite_tag then  self.sprite_tag = args.sprite_tag end
@@ -97,13 +100,20 @@ function Entity:update(dt, mx, my, mouse_down, mouse_pressed)
     -- Update inputs
     self:update_input(mx, my, mouse_down, mouse_pressed)
 
-    -- Tween animations if necessary
-    if self.dx ~= 0 or self.dy ~= 0 or self.dscale ~= 0 then
+    if self.dx ~= 0 or self.dy ~= 0 or self.dscale ~= 0 and not self.dragging then
         self.dx = self:return_to_xy(self.dx, dt)
         self.dy = self:return_to_xy(self.dy, dt)
         self.dscale = self:return_to_scale(dt)
         self:create_sprite()
     end
+    
+end
+
+
+function Entity:drag()
+    self.dx = self.input_manager.mx - self.x
+    self.dy = self.input_manager.my - self.y
+    self:create_sprite()
 end
 
 
@@ -134,7 +144,6 @@ end
 
 function Entity:update_input(mx, my, mouse_down, mouse_pressed)
     local is_hovered = self:contains_point(mx, my)
-
     if is_hovered ~= self.hovered then
         self.hovered = is_hovered
         self:on_hover_changed()
@@ -147,8 +156,8 @@ function Entity:update_input(mx, my, mouse_down, mouse_pressed)
     end
 
     local is_dragging = self.dragging and mouse_down
-                     or is_hovered and mouse_down
-    if is_dragging ~= self.dragging then
+                     or is_hovered and mouse_pressed
+    if is_dragging ~= self.dragging and self.draggable then
         self.dragging = is_dragging
         if self.dragging then self:on_drag_start()
         else self:on_drag_end() end
@@ -175,6 +184,7 @@ end
 
 
 function Entity:on_drag_end()
+    self.dragging = false
 end
 
 

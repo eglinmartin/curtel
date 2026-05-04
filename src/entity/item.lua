@@ -26,7 +26,6 @@ end
 
 
 function Item:on_hover_changed()
-    self.selected = true
 end
 
 

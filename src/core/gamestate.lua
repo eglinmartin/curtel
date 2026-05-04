@@ -13,16 +13,14 @@ function GameState:init(GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAG
 
     -- Create persistent player entity
     self.player = Player("player", GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
-        x=0, y=0, w=20, h=32, s=1, r=0,
-        sprite_sheet="player", sprite_tag="idle", depth=128,
+        x=0, y=0, w=20, h=32, s=1, r=0, sprite_sheet="player", sprite_tag="idle", depth=128,
     })
     self.player.deck = Deck(self.player)
     self.player.bullets = {Bullets.BULLET_BRONZE, Bullets.BULLET_SILVER, Bullets.BULLET_GOLD, Bullets.BULLET_TITANIUM, Bullets.HEALTH_BEER, Bullets.HEALTH_WHISKY}
 
     -- Create persistent cursor entity
     self.cursor = Entity("cursor", GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
-        x=0, y=0, w=24, h=24, s=1, r=0,
-        sprite_sheet="cursors", sprite_tag="pointer", depth=255,
+        x=0, y=0, w=24, h=24, s=1, r=0, sprite_sheet="cursors", sprite_tag="pointer", depth=255,
     })
 end
 

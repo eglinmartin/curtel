@@ -21,7 +21,7 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     self.entities["player"] = self.player
 
     -- Create selection cursor
-    self.selection_cursor = Entity("selection_cursor", GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
+    self.selection_cursor = Entity("selection_cursor", GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
         x=54, y=54, w=8, h=8, s=1, r=0,
         sprite_sheet="icons", sprite_tag="down", depth=254,
     })
@@ -84,7 +84,7 @@ function GameScene:setup_events()
         self.event_manager.events.SELECTCARD, self, function()
             if self.player.selected_card then
                 self.render_manager:create_draw_object_foreground("player_card_large", "cards_large_" .. self.player.selected_card.suit, self.player.selected_card.value, 88.5, 52.5, math.random(-5, 5), 1, 128)
-                self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.15})
+                self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.3})
             end
         end
     )
@@ -194,7 +194,7 @@ function GameScene:animate_dealing(dt)
                 self.entities["player_card_" .. i] = Item(
                     "player_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
                     x=11.5+(11*i), y=101.5+(3*i), w=15, h=19, s=1, r=0,
-                    sprite_sheet="cards_" .. card.suit, sprite_tag=card.value, depth=128+i, item=self.player.hand[i]
+                    sprite_sheet="cards_" .. card.suit, sprite_tag=card.value, depth=128+i, item=self.player.hand[i], draggable=true
                 })
                 self.entities["player_card_" .. i]:animate({dx=-3-(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
                 self.render_manager.draw_objects_foreground["hud_player_deck"]:animate({dscale=0.3})
@@ -230,6 +230,36 @@ function GameScene:animate_card_hovering(dt)
 end
 
 
+function GameScene:animate_dragging(dt)
+    local drag_entities = {}
+    for _, entity in pairs(self.entities) do
+        if entity.dragging then
+            drag_entities[#drag_entities + 1] = entity
+        end
+    end
+
+    if #drag_entities > 1 then
+        local max_depth = -math.huge
+        for _, entity in ipairs(drag_entities) do
+            if entity.depth > max_depth then
+                max_depth = entity.depth
+            end
+        end
+        for _, entity in ipairs(drag_entities) do
+            if entity.depth ~= max_depth then
+                entity.dragging = (entity.depth == max_depth)
+            end
+        end
+    end
+
+    for _, entity in pairs(self.entities) do
+        if entity.dragging then
+            entity:drag()
+        end
+    end
+end
+
+
 function GameScene:update(dt, mx, my, md, mp)
     for _, entity in pairs(self.entities) do
         entity:update(dt, mx, my, md, mp)
@@ -239,6 +269,7 @@ function GameScene:update(dt, mx, my, md, mp)
     self.selection_cursor:move(-50, -50)
 
     -- Perform animations
+    self:animate_dragging()
     self:animate_dealing()
     self:animate_card_hovering()
 

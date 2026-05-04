@@ -49,6 +49,7 @@ end
 
 function InputManager:mousepressed(x, y, button)
     if button == 1 then
+        self.mouse_pressed = true
         self.event_manager:trigger(self.event_manager.events.MOUSEPRESSED, x, y)
     end
 end

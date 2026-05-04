@@ -64,9 +64,9 @@ function love.update(dt)
     GAME_STATE:update(dt)
     
     -- Update managers
-    INPUT_MANAGER:update(dt)
     RENDER_MANAGER:update(dt)
     SCENE_MANAGER:update(dt)
+    INPUT_MANAGER:update(dt)
 end
 
 
