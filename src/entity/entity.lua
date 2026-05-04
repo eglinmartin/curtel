@@ -42,6 +42,7 @@ function Entity:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANA
     self.hovered = false
     self.dragging = false
     self.clicked = false
+    self.released = false
 end
 
 
@@ -155,6 +156,7 @@ function Entity:update_input(mx, my, mouse_down, mouse_pressed)
         if self.clicked then self:on_click() end
     end
 
+    self.released = false
     local is_dragging = self.dragging and mouse_down
                      or is_hovered and mouse_pressed
     if is_dragging ~= self.dragging and self.draggable then
@@ -185,6 +187,7 @@ end
 
 function Entity:on_drag_end()
     self.dragging = false
+    self.released = true
 end
 
 

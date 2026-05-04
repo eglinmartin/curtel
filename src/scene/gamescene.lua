@@ -83,7 +83,7 @@ function GameScene:setup_events()
     self.event_manager:on(
         self.event_manager.events.SELECTCARD, self, function()
             if self.player.selected_card then
-                self.render_manager:create_draw_object_foreground("player_card_large", "cards_large_" .. self.player.selected_card.suit, self.player.selected_card.value, 88.5, 52.5, math.random(-5, 5), 1, 128)
+                self.render_manager:create_draw_object_foreground("player_card_large", "cards_large_" .. self.player.selected_card.suit, self.player.selected_card.value, 88.5, 52.5, math.random(-5, 5), 1, 125)
                 self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.3})
             end
         end
@@ -100,13 +100,13 @@ function GameScene:setup_events()
     )
 
     -- Mouse press event
-    self.event_manager:on(
-        self.event_manager.events.MOUSEPRESSED, self, function()
-            if self.hovering_card then
-                self.event_manager:trigger(self.event_manager.events.SELECTCARD)
-            end
-        end
-    )
+    -- self.event_manager:on(
+    --     self.event_manager.events.MOUSEPRESSED, self, function()
+    --         if self.hovering_card then
+    --             self.event_manager:trigger(self.event_manager.events.SELECTCARD)
+    --         end
+    --     end
+    -- )
 end
 
 
@@ -148,19 +148,6 @@ function GameScene:animate_enter()
         self.render_manager.text_objects["player_health"]:animate({dy=4})
         self.render_manager.text_objects["player_money"]:animate({dy=4})
         self.render_manager.text_objects["player_deck"]:animate({dy=4})
-    end
-
-    if self.enemy then
-        self.render_manager.draw_objects_foreground["enemy"]:animate({dy=4})
-        self.render_manager.draw_objects_foreground["hud_enemy_head"]:animate({dy=4})
-        self.render_manager.draw_objects_foreground["hud_enemy_health"]:animate({dy=4})
-        self.render_manager.draw_objects_foreground["hud_enemy_money"]:animate({dy=4})
-        self.render_manager.draw_objects_foreground["hud_enemy_deck"]:animate({dy=4})
-
-        self.render_manager.text_objects["enemy_name"]:animate({dy=4})
-        self.render_manager.text_objects["enemy_health"]:animate({dy=4})
-        self.render_manager.text_objects["enemy_money"]:animate({dy=4})
-        self.render_manager.text_objects["enemy_deck"]:animate({dy=4})
     end 
 end
 
@@ -210,23 +197,22 @@ end
 function GameScene:animate_card_hovering(dt)
     local hovering = false
     for i = #self.player.hand, 1, -1 do
-        if self.entities["player_card_".. i].hovered then
+        if self.entities["player_card_".. i] and self.entities["player_card_".. i].hovered then
             local card = self.entities["player_card_".. i]
             if self.player.selected_card ~= card.item then
-                self.player.selected_card = card.item
                 self.selection_cursor:animate({dy=-2})
             end
             hovering = true
-            self.selection_cursor:move(self.entities["player_card_".. i].x, self.entities["player_card_".. i].y - 18)
-            self.render_manager.draw_objects_foreground["player_card_".. i]:animate({dscale=0.2})
+            if not self.entities["player_card_".. i].dragging then
+                self.render_manager.draw_objects_foreground["player_card_".. i]:animate({dscale=0.2})
+                self.selection_cursor:move(self.entities["player_card_".. i].x, self.entities["player_card_".. i].y - 18)
+            end
             break
         end
     end
     
     self.hovering_card = hovering
-    if not hovering then
-        self.player.selected_card = nil
-    end
+
 end
 
 
@@ -252,9 +238,20 @@ function GameScene:animate_dragging(dt)
         end
     end
 
+    local card_to_remove = nil
     for _, entity in pairs(self.entities) do
         if entity.dragging then
             entity:drag()
+            self.player.selected_card = entity.item
+        end
+
+        if entity.released and entity.id:find("player_card_") then
+            if math.abs(self.input_manager.mx - 88.5) <= 16 and math.abs(self.input_manager.my - 52.5) <= 22 then
+                self.event_manager:trigger(self.event_manager.events.SELECTCARD)
+                entity:clear_sprite()
+                self.entities[entity.id] = nil
+                self.player.hand[tonumber(entity.id:match("%d+"))] = nil
+            end
         end
     end
 end
@@ -277,6 +274,8 @@ function GameScene:update(dt, mx, my, md, mp)
 
     -- Move the cursor's draw object to reflect cursor change
     self.selection_cursor:move(self.selection_cursor.x, self.selection_cursor.y)
+
+    print(self.player.selected_card)
 end
 
 
