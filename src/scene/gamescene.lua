@@ -231,19 +231,27 @@ end
 
 
 function GameScene:animate_card_hovering(dt)
+    -- Default to no hovering
     self.hovering = false
-    for i = #self.player.hand, 1, -1 do
-        if self.entities["player_card_".. i] and self.entities["player_card_".. i].hovered then
-            local card = self.entities["player_card_".. i]
-            if self.player.selected_card ~= card.item then
+
+    -- Loop through any card in player's hand
+    for key, entity in pairs(self.entities) do
+        if key:match("^player_card_") and entity.hovered then
+            self.hovering = true
+
+            -- Animate the pointer if first time card has been selected
+            if self.player.selected_card ~= entity.item then
                 self.pointer:animate({dy=-2})
+                self.player.selected_card = entity.item
             end
 
-            self.hovering = true
-            if not self.entities["player_card_".. i].dragging then
-                self.render_manager.draw_objects_foreground["player_card_".. i]:animate({dscale=0.2})
-                self.pointer:move(self.entities["player_card_".. i].x, self.entities["player_card_".. i].y - 18)
+            -- If card isn't being dragged, then enlarge and move pointer
+            if not entity.dragging then
+                self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
+                self.pointer:move(entity.x, entity.y - 18)
             end
+
+            -- Break so that no other cards hover - only one at a time
             break
         end
     end
