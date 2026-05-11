@@ -10,6 +10,7 @@ local GameState = Class{}
 
 function GameState:init(GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER)
     self.input_manager = INPUT_MANAGER
+    EVENT_MANAGER:trigger(EVENT_MANAGER.events.TOGGLE_FULLSCREEN)
 
     -- Create persistent player entity
     self.player = Player("player", GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
