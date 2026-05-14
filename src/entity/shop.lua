@@ -38,7 +38,6 @@ function Shop:init()
     self.stock_types = StockTypes
     self:reroll_bullets()
     self:reroll_cards()
-
 end
 
 
@@ -69,7 +68,7 @@ function Shop:reroll_cards()
         card_keys[i], card_keys[j] = card_keys[j], card_keys[i]
     end
     self.stock[StockTypes.CARDS] = {}
-    for i = 1, 6 do
+    for i = 1, 4 do
         table.insert(self.stock[StockTypes.CARDS], ShopItem(Cards[card_keys[i]], StockTypes.CARDS))
     end
 end

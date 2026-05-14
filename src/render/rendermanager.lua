@@ -21,11 +21,19 @@ function RenderManager:init(event_manager, rs)
     self.draw_objects_background = {}
     self.draw_objects_foreground = {}
     self.text_objects = {}
+    self.image_cache = {}
+end
+
+
+function RenderManager:get_image(path)
+    if not self.image_cache[path] then
+        self.image_cache[path] = love.graphics.newImage(path)
+    end
+    return self.image_cache[path]
 end
 
 
 function RenderManager:setup_events()
-    -- Shuffle and reset the deck on shuffle command
     self.event_manager:on(
         self.event_manager.events.TOGGLE_FULLSCREEN, self, function()
             local fs = love.window.getFullscreen()
@@ -37,7 +45,6 @@ function RenderManager:setup_events()
         end
     )
 
-    -- Deal cards to the player on deal cards command
     self.event_manager:on(
         self.event_manager.events.DEALCARDS, self, function()
             self.animation_dealing = 0
@@ -54,17 +61,14 @@ end
 
 
 function RenderManager:update(dt)
-    -- Update background animations
     for _, draw_object in pairs(self.draw_objects_background) do
        draw_object:update(dt)
     end
 
-    -- Update foreground animations
     for _, draw_object in pairs(self.draw_objects_foreground) do
        draw_object:update(dt)
     end
     
-    -- Update text animations
     for _, text_object in pairs(self.text_objects) do
        text_object:update(dt)
     end
@@ -73,10 +77,8 @@ end
 
 function RenderManager:draw(rs)
     rs.push()
-
     self:draw_background()
     self:draw_foreground()
-    
     rs.pop()
 end
 
@@ -87,7 +89,7 @@ function RenderManager:create_draw_object_background(sprite_id, sprite_name, spr
             sprite_id,
             peachy.new(
                 "bin/json/" .. sprite_name .. ".json",
-                love.graphics.newImage("bin/backgrounds/" .. sprite_name .. ".png"),
+                self:get_image("bin/backgrounds/" .. sprite_name .. ".png"),
                 sprite_tag
             ),
             x, y, rot, scale, depth
@@ -101,7 +103,7 @@ function RenderManager:create_draw_object_foreground(sprite_id, sprite_name, spr
             sprite_id,
             peachy.new(
                 "bin/json/" .. sprite_name .. ".json",
-                love.graphics.newImage("bin/sprites/" .. sprite_name .. ".png"),
+                self:get_image("bin/sprites/" .. sprite_name .. ".png"),
                 sprite_tag
             ),
             x, y, rot, scale, depth
@@ -125,7 +127,6 @@ end
 
 
 function RenderManager:draw_background()
-    -- Draw background layer
     for _, draw_obj in pairs(self.draw_objects_background) do
         draw_obj.sprite:draw(
             draw_obj.x + draw_obj.dx,
@@ -141,7 +142,6 @@ end
 
 
 function RenderManager:draw_foreground()
-    -- Sort sprites by depth
     local draw_list = {}
     for _, obj in pairs(self.draw_objects_foreground) do
         table.insert(draw_list, obj)
@@ -150,7 +150,6 @@ function RenderManager:draw_foreground()
         return a.depth < b.depth
     end)
 
-    -- Sort text by depth
     local draw_text_list = {}
     for _, obj in pairs(self.text_objects) do
         table.insert(draw_text_list, obj)
@@ -159,7 +158,6 @@ function RenderManager:draw_foreground()
         return a.depth < b.depth
     end)
     
-    -- Draw shadows layer (sprites)
     for _, draw_obj in ipairs(draw_list) do
         self:draw_shadow(
             draw_obj.sprite,
@@ -172,11 +170,8 @@ function RenderManager:draw_foreground()
         )
     end
 
-    -- Draw shadows layer (text)
     for _, text_obj in ipairs(draw_text_list) do
         local text_scale = text_obj.scale + text_obj.dscale
-
-        -- Draw text shadow
         love.graphics.setColor(self.shadow_colour)
         local offsets = {{2, 0}, {2, 1}, {2, 2}, {1, 2}, {0, 2}}
         for i = 1, #offsets do
@@ -187,14 +182,10 @@ function RenderManager:draw_foreground()
     end
     love.graphics.setColor(1, 1, 1, 1)
 
-    -- Draw foreground layer (text)
     for _, text_obj in ipairs(draw_text_list) do
         local text_scale = text_obj.scale + text_obj.dscale
-        
-        -- Draw text outline
         love.graphics.setColor(self.colours.BLACK)
         local offsets = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}}
-
         for i = 1, #offsets do
             local ox = (offsets[i][1] * text_scale)
             local oy = (offsets[i][2] * text_scale)
@@ -206,13 +197,10 @@ function RenderManager:draw_foreground()
                 text_obj.align
             )
         end
-
-        -- Draw text
         love.graphics.setColor(text_obj.colour)
         self:draw_characters(text_obj.text, text_obj.x + text_obj.dx, text_obj.y + text_obj.dy - 6, text_scale, text_obj.align)
     end
 
-    -- Draw foreground layer (sprites)
     love.graphics.setColor(1, 1, 1, 1)
     for _, draw_obj in ipairs(draw_list) do
         draw_obj.sprite:draw(
@@ -251,23 +239,19 @@ function RenderManager:draw_characters(text, x, y, scale, align)
     end
 end
 
+
 function RenderManager:set_shadow_colour(colour)
     self.shadow_colour = colour
 end
 
 
 function RenderManager:draw_shadow(anim, x, y, rot, scale, ox, oy)
-    local outlineColor = self.shadow_colour
-
     love.graphics.setShader(Shaders["SHADOW"])
-    love.graphics.setColor(outlineColor)
-
+    love.graphics.setColor(self.shadow_colour)
     anim:draw(x + 1, y + 1, rot, scale, scale, ox, oy)
-
     love.graphics.setShader()
     love.graphics.setColor(1, 1, 1, 1)
 end
 
 
 return RenderManager
-
