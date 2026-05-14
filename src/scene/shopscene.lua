@@ -132,6 +132,15 @@ function ShopScene:animate_stock()
         elseif self.stock_direction == Directions.RIGHT then
             self.render_manager.draw_objects_foreground["category_r"]:animate({dx=4, dscale=-0.5})
         end
+
+        -- Draw gun barrel and player's bullets
+        if self.stock_type == self.shop.stock_types.BULLETS then
+            local barrel_xy = {190, 53}
+            self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", barrel_xy[1], barrel_xy[2], 0, 1, 128)
+            self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", barrel_xy[1], barrel_xy[2], 0, 1, 129)
+            self.render_manager.draw_objects_foreground["barrel_base"]:animate({dx=2*self.stock_direction})
+            self.render_manager.draw_objects_foreground["barrel_chambers"]:animate({dx=2*self.stock_direction})
+        end
         
     end
 
@@ -160,6 +169,7 @@ function ShopScene:animate_stock()
                 self.render_manager:create_text_object("shop_item_cost_" .. i, "$" .. v.item.cost, cost_colour, self.shop_bullets_xy[i][1], self.shop_bullets_xy[i][2] + 12, 0, 1, 64, "centre")
                 self.render_manager.text_objects["shop_item_cost_" .. i]:animate({dy=4})
 
+            -- Draw cards
             elseif self.stock_type == self.shop.stock_types.CARDS then
                 self.entities["shop_item_" .. i] = Item(
                     "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
@@ -176,26 +186,6 @@ function ShopScene:animate_stock()
             
         end
 
-
-
-
-        -- -- Draw gun barrel and player's bullets
-        -- if self.stock_type == self.shop.stock_types.BULLETS then
-        --     local barrel_xy = {190, 53}
-        --     self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", barrel_xy[1], barrel_xy[2], 0, 1, 128)
-        --     self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", barrel_xy[1], barrel_xy[2], 0, 1, 129)
-        --     self.render_manager.draw_objects_foreground["barrel_base"].dx = 2 * self.stock_direction
-        --     self.render_manager.draw_objects_foreground["barrel_chambers"].dx = 2 * self.stock_direction
-
-        --     local chamber_xy = {{0, -23}, {20, -11}, {20, 11},{0, 23}, {-20, 11}, {-20, -11}}
-        --     for i, v in ipairs(chamber_xy) do
-        --         self.render_manager:create_draw_object_foreground("player_bullet_back" .. i, "bullet_backs", self.player.bullets[i].type, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 130)
-        --         self.render_manager:create_draw_object_foreground("player_bullet" .. i, "bullets", self.player.bullets[i].tag, barrel_xy[1] + v[1], barrel_xy[2] + v[2], 0, 1, 131)
-        --         self.render_manager.draw_objects_foreground["player_bullet_back" .. i].dx = 2 * self.stock_direction
-        --         self.render_manager.draw_objects_foreground["player_bullet" .. i].dx = 2 * self.stock_direction
-        --     end
-
-        -- end
     end
 end
 
@@ -255,8 +245,8 @@ end
 function ShopScene:update_sprites()
     self.render_manager:clear_screen()
 
-    self.render_manager:create_draw_object_background("background", "background", "green", 120, 67.5, 0, 1, 255)
-    self.render_manager:create_draw_object_foreground("divider_vertical", "divider_vertical", "green", 72, 67.5, 0, 1, 255)
+    self.render_manager:create_draw_object_background("background", "background", "green", 120, 67.5, 0, 1, 1)
+    self.render_manager:create_draw_object_foreground("divider_vertical", "divider_vertical", "green", 72, 67.5, 0, 1, 1)
 
     self.render_manager:create_draw_object_foreground("category_l", "icons", "left", 86.5, 19.5, 0, 1, 129)
     self.render_manager:create_draw_object_foreground("category_r", "icons", "right", 138.5, 19.5, 0, 1, 129)
