@@ -35,8 +35,10 @@ function Entity:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANA
     -- Get sprite information
     if args.sprite_sheet then self.sprite_sheet = args.sprite_sheet end
     if args.sprite_tag then  self.sprite_tag = args.sprite_tag end
-    if args.depth then self.depth = args.depth or 255 end
     if args.background then self.background = true or false end
+
+    if args.depth then self.original_depth = args.depth or 255 end
+    self.depth = self.original_depth
 
     -- input state
     self.hovered = false
@@ -114,6 +116,8 @@ end
 function Entity:drag()
     self.dx = self.input_manager.mx - self.x
     self.dy = self.input_manager.my - self.y
+    self.dscale = 0.2
+    self.depth = 254
     self:create_sprite()
 end
 
@@ -161,8 +165,12 @@ function Entity:update_input(mx, my, mouse_down, mouse_pressed)
                      or is_hovered and mouse_pressed
     if is_dragging ~= self.dragging and self.draggable then
         self.dragging = is_dragging
-        if self.dragging then self:on_drag_start()
-        else self:on_drag_end() end
+
+        if self.dragging then
+            self:on_drag_start()
+        else
+            self:on_drag_end()
+        end
     end
 end
 
@@ -188,6 +196,7 @@ end
 function Entity:on_drag_end()
     self.dragging = false
     self.released = true
+    self.depth = self.original_depth
 end
 
 
