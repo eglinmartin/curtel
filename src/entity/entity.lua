@@ -30,6 +30,7 @@ function Entity:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANA
     self.shadow_y = self.y
     
     -- Get interaction information
+    if args.hoverable then self.hoverable = args.hoverable or false end
     if args.draggable then self.draggable = args.draggable or false end
 
     -- Get sprite information

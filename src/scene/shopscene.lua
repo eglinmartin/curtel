@@ -55,19 +55,20 @@ function ShopScene:enter()
 
     self.entities["category_l"] = Entity(
         "category_l", self.game_state, self.event_manager, self.input_manager, self.render_manager, 
-        {x=86.5, y=19.5, w=15, h=15, s=1, r=0,sprite_sheet="icons", sprite_tag="left", depth=128, draggable=false}
+        {x=86.5, y=19.5, w=15, h=15, s=1, r=0,sprite_sheet="icons", sprite_tag="left", depth=128, draggable=false, hoverable=true}
     )
     self.entities["category_l"]:create_sprite()
 
     self.entities["category_r"] = Entity(
         "category_r", self.game_state, self.event_manager, self.input_manager, self.render_manager, 
-        {x=138.5, y=19.5, w=15, h=15, s=1, r=0,sprite_sheet="icons", sprite_tag="right", depth=128, draggable=false}
+        {x=138.5, y=19.5, w=15, h=15, s=1, r=0,sprite_sheet="icons", sprite_tag="right", depth=128, draggable=false, hoverable=true}
     )
     self.entities["category_l"]:create_sprite()
 
+    self.bin_xy = {216, 103}
     self.entities["dustbin"] = Entity(
         "dustbin", self.game_state, self.event_manager, self.input_manager, self.render_manager, 
-        {x=216, y=103, w=25, h=32, s=1, r=0,sprite_sheet="dustbin", sprite_tag="closed", depth=128, draggable=false}
+        {x=self.bin_xy[1], y=self.bin_xy[2], w=25, h=32, s=1, r=0,sprite_sheet="dustbin", sprite_tag="closed", depth=128, draggable=false}
     )
     self.entities["dustbin"]:create_sprite()
 
@@ -202,7 +203,7 @@ function ShopScene:animate_stock()
                 self.entities["shop_item_" .. i] = Item(
                     "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
                     x=self.shop_bullets_xy[i][1]-0.5, y=self.shop_bullets_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
-                    sprite_sheet="bullets", sprite_tag=v.item.tag, depth=128+i, item=v.item, draggable=true
+                    sprite_sheet="bullets", sprite_tag=v.item.tag, depth=128+i, item=v.item, draggable=true, hoverable=true
                 })
                 self.entities["shop_item_" .. i]:animate({dy=4})
                 if v.item.cost > self.player.money then
@@ -216,7 +217,7 @@ function ShopScene:animate_stock()
                 self.entities["shop_item_" .. i] = Item(
                     "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
                     x=self.shop_cards_xy[i][1]-0.5, y=self.shop_cards_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
-                    sprite_sheet="cards_" .. v.item.suit, sprite_tag=v.item.value, depth=128+i, item=v.item, draggable=true
+                    sprite_sheet="cards_" .. v.item.suit, sprite_tag=v.item.value, depth=128+i, item=v.item, draggable=true, hoverable=true
                 })
                 self.entities["shop_item_" .. i]:animate({dy=4})
                 if v.item.cost > self.player.money then
@@ -243,10 +244,10 @@ function ShopScene:animate_hovering(dt)
 
     -- Loop through any card in player's hand
     for key, entity in pairs(self.entities) do
-        if entity.hovered then
+        if entity.hovered and entity.hoverable then
             self.hovering = true
 
-            -- If card isn't being dragged, then enlarge and move pointer
+            -- If entity isn't being dragged, then enlarge and move pointer
             if not entity.dragging then
                 if self.render_manager.draw_objects_foreground[entity.id] then
                     self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
@@ -285,7 +286,21 @@ function ShopScene:animate_dragging(dt)
     for _, entity in pairs(self.entities) do
         if entity.dragging then
             entity:drag()
-            self.player.selected_card = entity.item
+        end
+    end
+
+    -- Release
+    for key, entity in pairs(self.entities) do
+        if string.find(key, "player_bullet_") and entity.released then
+            if math.abs((entity.x + entity.dx) - self.bin_xy[1]) <= 15 and math.abs((entity.y + entity.dy) - self.bin_xy[2]) <= 18 then
+                entity:clear_sprite()
+                self.entities[key] = nil
+                local i = tonumber(key:match("player_bullet_(%d+)"))
+                if i then
+                    self.player.bullets[i] = nil
+                    self.entities["dustbin"]:animate({dscale=-0.2})
+                end
+            end
         end
     end
 end
@@ -312,7 +327,7 @@ function ShopScene:switch_stock()
                 self.entities["player_bullet_" .. i] = Item(
                     "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
                     x=barrel_bullets_xy[i][1], y=barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
-                    sprite_sheet="bullets", sprite_tag=v.tag, depth=230, item=v, draggable=true
+                    sprite_sheet="bullets", sprite_tag=v.tag, depth=230, item=v, draggable=true, hoverable=true
                 })
             end
         end
@@ -348,8 +363,6 @@ function ShopScene:switch_stock()
                 self.render_manager.text_objects["shop_item_cost_" .. i] = nil
             end
         end
-
-
     end
 
     self.animation_stock = 0
