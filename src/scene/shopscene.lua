@@ -236,6 +236,11 @@ function ShopScene:animate_hovering(dt)
     -- Default to no hovering
     self.hovering = false
 
+    -- Prevent items being hovered if any item is being dragged
+    for key, entity in pairs(self.entities) do
+        if entity.dragging then return end
+    end
+
     -- Loop through any card in player's hand
     for key, entity in pairs(self.entities) do
         if entity.hovered then
