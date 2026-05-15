@@ -49,8 +49,21 @@ function ShopScene:enter()
     self.shop_bullets_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
     self.shop_cards_xy = {{89, 55}, {105, 55}, {121, 55}, {137, 55}}
 
-    self:update_sprites()
-    
+    self.render_manager:create_draw_object_background("background", "background", "green", 120, 67.5, 0, 1, 1)
+    self.render_manager:create_draw_object_foreground("divider_vertical", "divider_vertical", "green", 72, 67.5, 0, 1, 1)
+
+    self.entities["category_l"] = Entity(
+        "category_l", self.game_state, self.event_manager, self.input_manager, self.render_manager, 
+        {x=86.5, y=19.5, w=15, h=15, s=1, r=0,sprite_sheet="icons", sprite_tag="left", depth=128, draggable=false}
+    )
+    self.entities["category_l"]:create_sprite()
+
+    self.entities["category_r"] = Entity(
+        "category_r", self.game_state, self.event_manager, self.input_manager, self.render_manager, 
+        {x=138.5, y=19.5, w=15, h=15, s=1, r=0,sprite_sheet="icons", sprite_tag="right", depth=128, draggable=false}
+    )
+    self.entities["category_l"]:create_sprite()
+
     self.render_manager:set_shadow_colour(Colours.GREEN5)
     self.render_manager.draw_objects_background["background"]:animate({dx=-4, dscale=0.1})
 end
@@ -59,6 +72,14 @@ end
 function ShopScene:update(dt, mx, my, md, mp)
     for _, entity in pairs(self.entities) do
         entity:update(dt, mx, my, md, mp)
+    end
+
+    if self.entities["category_l"].clicked then
+        self.event_manager:trigger(self.event_manager.events.SWITCHSTOCK_LEFT)
+    end
+
+    if self.entities["category_r"].clicked then
+        self.event_manager:trigger(self.event_manager.events.SWITCHSTOCK_RIGHT)
     end
 
     self:animate_menu()
@@ -92,16 +113,19 @@ function ShopScene:animate_menu()
     if self.animation_title == 21 then
         self.render_manager:create_text_object("player_name", "PLAYER 1", Colours.GREY2, 17, 44, 0, 1, 64, "left")
         self.render_manager.text_objects["player_name"]:animate({dx=-3})
+
     elseif self.animation_title == 26 then
         self.render_manager:create_text_object("player_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health), Colours.RED1, 26, 55, 0, 1, 64, "left")
         self.render_manager:create_draw_object_foreground("hud_player_health", "icons", "heart", 19.5, 57.5, 0, 1, 128)
         self.render_manager.text_objects["player_health"]:animate({dx=-3})
         self.render_manager.draw_objects_foreground["hud_player_health"]:animate({dx=-3})
+
     elseif self.animation_title == 31 then
         self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 66, 0, 1, 64, "left")
         self.render_manager:create_draw_object_foreground("hud_player_money", "icons", "money", 19.5, 68.5, 0, 1, 128)
         self.render_manager.text_objects["player_money"]:animate({dx=-3})
         self.render_manager.draw_objects_foreground["hud_player_money"]:animate({dx=-3})
+
     elseif self.animation_title == 36 then
         self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 77, 0, 1, 64, "left")
         self.render_manager:create_draw_object_foreground("hud_player_deck", "icons", "cards", 19.5, 79.5, 0, 1, 128)
@@ -125,12 +149,12 @@ function ShopScene:animate_stock()
     
     if self.animation_stock == 1 then
         self.render_manager:create_text_object("text_category", self.stock_type:upper(), Colours.GREY2, 113, 17, 0, 1, 64, "centre")
-        self.render_manager.text_objects["text_category"]:animate({dx = 4 * -self.stock_direction})
+        self.render_manager.text_objects["text_category"]:animate({dx = 4 * self.stock_direction})
 
         if self.stock_direction == Directions.LEFT then
-            self.render_manager.draw_objects_foreground["category_l"]:animate({dx=-4, dscale=-0.5})
+            self.entities["category_l"]:animate({dx=-4, dscale=-0.5})
         elseif self.stock_direction == Directions.RIGHT then
-            self.render_manager.draw_objects_foreground["category_r"]:animate({dx=4, dscale=-0.5})
+            self.entities["category_r"]:animate({dx=4, dscale=-0.5})
         end
 
         -- Draw gun barrel and player's bullets
@@ -243,13 +267,7 @@ end
 
 
 function ShopScene:update_sprites()
-    self.render_manager:clear_screen()
 
-    self.render_manager:create_draw_object_background("background", "background", "green", 120, 67.5, 0, 1, 1)
-    self.render_manager:create_draw_object_foreground("divider_vertical", "divider_vertical", "green", 72, 67.5, 0, 1, 1)
-
-    self.render_manager:create_draw_object_foreground("category_l", "icons", "left", 86.5, 19.5, 0, 1, 129)
-    self.render_manager:create_draw_object_foreground("category_r", "icons", "right", 138.5, 19.5, 0, 1, 129)
 end
 
 

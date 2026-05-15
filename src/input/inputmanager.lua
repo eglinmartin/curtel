@@ -10,8 +10,6 @@ function InputManager:init(EVENT_MANAGER, rs)
         ["f1"] = self.event_manager.events.SWITCHSCREEN_GAME,
         ["f2"] = self.event_manager.events.SWITCHSCREEN_SHOP,
         ["1"] = self.event_manager.events.DEALCARDS,
-        ["2"] = self.event_manager.events.SWITCHSTOCK_LEFT,
-        ["3"] = self.event_manager.events.SWITCHSTOCK_RIGHT,
         ["f11"] = self.event_manager.events.TOGGLE_FULLSCREEN
     }
     self.rs = rs
