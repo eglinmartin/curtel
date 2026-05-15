@@ -65,6 +65,12 @@ function ShopScene:enter()
     )
     self.entities["category_l"]:create_sprite()
 
+    self.entities["dustbin"] = Entity(
+        "dustbin", self.game_state, self.event_manager, self.input_manager, self.render_manager, 
+        {x=216, y=103, w=25, h=32, s=1, r=0,sprite_sheet="dustbin", sprite_tag="closed", depth=128, draggable=false}
+    )
+    self.entities["dustbin"]:create_sprite()
+
     self.event_manager:trigger(self.event_manager.events.SWITCHSTOCK_RIGHT)
 
     self.render_manager:set_shadow_colour(Colours.GREEN5)
@@ -152,7 +158,7 @@ function ShopScene:animate_stock()
     
     if self.animation_stock == 1 then
         self.render_manager:create_text_object("text_category", self.stock_type:upper(), Colours.GREY2, 113, 17, 0, 1, 64, "centre")
-        self.render_manager.text_objects["text_category"]:animate({dx = 4 * self.stock_direction})
+        self.render_manager.text_objects["text_category"]:animate({dx = 2 * self.stock_direction})
 
         if self.stock_direction == Directions.LEFT then
             self.entities["category_l"]:animate({dx=-4, dscale=-0.5})
@@ -164,12 +170,18 @@ function ShopScene:animate_stock()
         if self.stock_type == self.shop.stock_types.BULLETS then
             self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", self.barrel_xy[1], self.barrel_xy[2], 0, 1, 128)
             self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", self.barrel_xy[1], self.barrel_xy[2], 0, 1, 129)
-            self.render_manager.draw_objects_foreground["barrel_base"]:animate({dx=2*self.stock_direction})
-            self.render_manager.draw_objects_foreground["barrel_chambers"]:animate({dx=2*self.stock_direction})
-            for i, v in ipairs(self.player.bullets) do
-                self.entities["player_bullet_" .. i].dx = self.render_manager.draw_objects_foreground["barrel_chambers"].dx
-                self.entities["player_bullet_" .. i]:create_sprite()
+            self.render_manager.draw_objects_foreground["barrel_base"]:animate({dy=4})
+            self.render_manager.draw_objects_foreground["barrel_chambers"]:animate({dy=4})
+            for i, v in pairs(self.player.bullets) do
+                if v then
+                    self.entities["player_bullet_" .. i]:animate({dy=4})
+                    self.entities["player_bullet_" .. i]:create_sprite()
+                end
             end
+        
+        elseif self.stock_type == self.shop.stock_types.CARDS then
+            self.render_manager:create_draw_object_foreground("deck", "deck", "deck", self.barrel_xy[1], self.barrel_xy[2], 0, 1, 128)
+            self.render_manager.draw_objects_foreground["deck"]:animate({dy=4})
         end
         
     end
@@ -231,7 +243,9 @@ function ShopScene:animate_hovering(dt)
 
             -- If card isn't being dragged, then enlarge and move pointer
             if not entity.dragging then
-                self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
+                if self.render_manager.draw_objects_foreground[entity.id] then
+                    self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
+                end
             end
 
             -- Break so that no other items hover - only one at a time
@@ -272,11 +286,6 @@ function ShopScene:animate_dragging(dt)
 end
 
 
-function ShopScene:update_sprites()
-
-end
-
-
 function ShopScene:switch_stock()
     if self.stock_type == self.shop.stock_types.BULLETS then
         self.stock_type = self.shop.stock_types.CARDS
@@ -293,12 +302,14 @@ function ShopScene:switch_stock()
             {self.barrel_xy[1]-20, self.barrel_xy[2]+11},
             {self.barrel_xy[1]-20, self.barrel_xy[2]-11}
         }
-        for i, v in ipairs(self.player.bullets) do
-            self.entities["player_bullet_" .. i] = Item(
-                "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                x=barrel_bullets_xy[i][1], y=barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
-                sprite_sheet="bullets", sprite_tag=v.tag, depth=230, item=v, draggable=true
-            })
+        for i, v in pairs(self.player.bullets) do
+            if v then
+                self.entities["player_bullet_" .. i] = Item(
+                    "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                    x=barrel_bullets_xy[i][1], y=barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
+                    sprite_sheet="bullets", sprite_tag=v.tag, depth=230, item=v, draggable=true
+                })
+            end
         end
 
     else
@@ -312,16 +323,19 @@ function ShopScene:switch_stock()
             end
         end
 
-        for i, v in ipairs(self.player.bullets) do
-            if self.entities["player_bullet_" .. i] then
-                self.entities["player_bullet_" .. i]:clear_sprite()
-                self.entities["player_bullet_" .. i] = nil
+        for i, v in pairs(self.player.bullets) do
+            if v then
+                if self.entities["player_bullet_" .. i] then
+                    self.entities["player_bullet_" .. i]:clear_sprite()
+                    self.entities["player_bullet_" .. i] = nil
+                end
             end
         end
     end
 
     if self.stock_type == self.shop.stock_types.CARDS then
     else
+        self.render_manager:remove_draw_object_foreground("deck")
         for i = 1, #self.shop.stock["cards"] do
             if self.entities["shop_item_" .. i] then
                 self.entities["shop_item_" .. i]:clear_sprite()
