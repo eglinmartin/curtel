@@ -198,6 +198,8 @@ function Entity:on_drag_end()
     self.dragging = false
     self.released = true
     self.depth = self.original_depth
+    self.release_x = self.x + self.dx
+    self.release_y = self.y + self.dy
 end
 
 

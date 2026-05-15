@@ -7,7 +7,6 @@ local Shop = require("src.entity.shop")
 
 local ShopScene = Class{}
 
-
 local Directions = {
     LEFT = -1,
     RIGHT = 1
@@ -47,6 +46,15 @@ function ShopScene:enter()
     self.hovering = false
 
     self.barrel_xy = {190, 53}
+    self.barrel_bullets_xy = {
+            {self.barrel_xy[1], self.barrel_xy[2]-23},
+            {self.barrel_xy[1]+20, self.barrel_xy[2]-11},
+            {self.barrel_xy[1]+20, self.barrel_xy[2]+11},
+            {self.barrel_xy[1], self.barrel_xy[2]+23},
+            {self.barrel_xy[1]-20, self.barrel_xy[2]+11},
+            {self.barrel_xy[1]-20, self.barrel_xy[2]-11}
+        }
+    
     self.shop_bullets_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
     self.shop_cards_xy = {{89, 55}, {105, 55}, {121, 55}, {137, 55}}
 
@@ -154,7 +162,6 @@ end
 
 
 function ShopScene:animate_stock()
-    local cost_colour = Colours.YELLOW1
     self.animation_stock = self.animation_stock + 1
     
     if self.animation_stock == 1 then
@@ -188,48 +195,54 @@ function ShopScene:animate_stock()
     end
 
     -- Create shop stock
-    for i, v in ipairs(self.shop.stock[self.stock_type]) do
+    for i = 1, #self.shop.stock[self.stock_type] do
+        local v = self.shop.stock[self.stock_type][i]
+        if v then
 
-        -- Check keyframe
-        if self.stock_type == self.shop.stock_types.BULLETS then
-            self.stock_frame = 1 + (4 * (i-1))
-        elseif self.stock_type == self.shop.stock_types.CARDS then
-            self.stock_frame = 1 + (6 * (i-1))
-        end
-        if self.animation_stock == self.stock_frame then
-
-            -- Draw bullets
+            -- Check keyframe
             if self.stock_type == self.shop.stock_types.BULLETS then
-                self.entities["shop_item_" .. i] = Item(
-                    "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                    x=self.shop_bullets_xy[i][1]-0.5, y=self.shop_bullets_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
-                    sprite_sheet="bullets", sprite_tag=v.item.tag, depth=128+i, item=v.item, draggable=true, hoverable=true
-                })
-                self.entities["shop_item_" .. i]:animate({dy=4})
-                if v.item.cost > self.player.money then
-                    cost_colour = Colours.GREY3
-                end
-                self.render_manager:create_text_object("shop_item_cost_" .. i, "$" .. v.item.cost, cost_colour, self.shop_bullets_xy[i][1], self.shop_bullets_xy[i][2] + 12, 0, 1, 64, "centre")
-                self.render_manager.text_objects["shop_item_cost_" .. i]:animate({dy=4})
-
-            -- Draw cards
+                self.stock_frame = 1 + (4 * (i-1))
             elseif self.stock_type == self.shop.stock_types.CARDS then
-                self.entities["shop_item_" .. i] = Item(
-                    "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                    x=self.shop_cards_xy[i][1]-0.5, y=self.shop_cards_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
-                    sprite_sheet="cards_" .. v.item.suit, sprite_tag=v.item.value, depth=128+i, item=v.item, draggable=true, hoverable=true
-                })
-                self.entities["shop_item_" .. i]:animate({dy=4})
-                if v.item.cost > self.player.money then
-                    cost_colour = Colours.GREY3
-                end
-                self.render_manager:create_text_object("shop_item_cost_" .. i, "$" .. v.item.cost, cost_colour, self.shop_cards_xy[i][1], self.shop_cards_xy[i][2] + 12, 0, 1, 64, "centre")
-                self.render_manager.text_objects["shop_item_cost_" .. i]:animate({dy=4})
+                self.stock_frame = 1 + (6 * (i-1))
             end
-            
+            if self.animation_stock == self.stock_frame then
+
+                -- Draw bullets
+                if self.stock_type == self.shop.stock_types.BULLETS then
+                    self.entities["shop_item_" .. i] = Item(
+                        "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                        x=self.shop_bullets_xy[i][1]-0.5, y=self.shop_bullets_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
+                        sprite_sheet="bullets", sprite_tag=v.item.tag, depth=128+i, item=v.item, draggable=true, hoverable=true
+                    })
+                    self.entities["shop_item_" .. i]:animate({dy=4})
+                    self:redraw_cost(i, v)
+                    self.render_manager.text_objects["shop_item_cost_" .. i]:animate({dy=4})
+
+                -- Draw cards
+                elseif self.stock_type == self.shop.stock_types.CARDS then
+                    self.entities["shop_item_" .. i] = Item(
+                        "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                        x=self.shop_cards_xy[i][1]-0.5, y=self.shop_cards_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
+                        sprite_sheet="cards_" .. v.item.suit, sprite_tag=v.item.value, depth=128+i, item=v.item, draggable=true, hoverable=true
+                    })
+                    self.entities["shop_item_" .. i]:animate({dy=4})
+                    self:redraw_cost(i, v)
+                    self.render_manager.text_objects["shop_item_cost_" .. i]:animate({dy=4})
+                end
+                
+            end
         end
 
     end
+end
+
+
+function ShopScene:redraw_cost(i, entity)
+    local cost_colour = Colours.YELLOW1
+    if entity.item.cost > self.player.money then
+        cost_colour = Colours.GREY3
+    end
+    self.render_manager:create_text_object("shop_item_cost_" .. i, "$" .. entity.item.cost, cost_colour, self.shop_bullets_xy[i][1], self.shop_bullets_xy[i][2] + 12, 0, 1, 64, "centre")
 end
 
 
@@ -291,8 +304,11 @@ function ShopScene:animate_dragging(dt)
 
     -- Release
     for key, entity in pairs(self.entities) do
+        local entity_id = tonumber(entity.id:match("(%d+)$"))
+
+        -- Bin player bullet if above dustbin
         if string.find(key, "player_bullet_") and entity.released then
-            if math.abs((entity.x + entity.dx) - self.bin_xy[1]) <= 15 and math.abs((entity.y + entity.dy) - self.bin_xy[2]) <= 18 then
+            if math.abs(entity.release_x - self.bin_xy[1]) <= 15 and math.abs(entity.release_y - self.bin_xy[2]) <= 18 then
                 entity:clear_sprite()
                 self.entities[key] = nil
                 local i = tonumber(key:match("player_bullet_(%d+)"))
@@ -302,6 +318,57 @@ function ShopScene:animate_dragging(dt)
                 end
             end
         end
+
+        -- Buy item
+        local buy_tolerance = 7
+        if string.find(key, "shop_item_") and entity.released then
+            for i, xy in ipairs(self.barrel_bullets_xy) do
+                if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
+                    if self.player.bullets[i] == nil then
+                        
+                        -- If player can afford it:
+                        if self.player.money >= entity.item.cost then
+                            self.player.money = self.player.money - entity.item.cost
+                            self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 66, 0, 1, 64, "left")
+                            self.render_manager.text_objects["player_money"]:animate({dx=-3})
+                            self.render_manager.draw_objects_foreground["hud_player_money"]:animate({dscale=0.8})
+
+                            for j = 1, #self.shop.stock[self.stock_type] do
+                                local v = self.shop.stock[self.stock_type][j]
+                                self:redraw_cost(j, v)
+                            end
+                            
+                            -- Buy item
+                            self.player.bullets[i] = entity.item
+
+                            -- Remove item from shop stock
+                            -- entity:clear_sprite()
+                            -- self.entities[key] = nil
+                            -- self.shop.stock[self.shop.stock_types.BULLETS][i] = nil
+                            -- self.render_manager:remove_text_object("shop_item_cost_" .. entity_id)
+                            
+                            -- Create new player bullet item and animate
+                            self.entities["player_bullet_" .. i] = Item(
+                                "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                                x=self.barrel_bullets_xy[i][1], y=self.barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
+                                sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
+                            })
+                            self.entities["player_bullet_" .. i]:create_sprite()
+                            self.entities["player_bullet_" .. i]:animate({dscale=0.5})
+                            break
+
+                        -- If player can't afford it, emphasize cost
+                        else
+                            if self.render_manager.text_objects["shop_item_cost_" .. entity_id] then
+                                self.render_manager.text_objects["shop_item_cost_" .. entity_id]:animate(({dscale=1, dy=-9}))
+                            end
+                        end
+                        
+                    end
+                end
+            end
+        end
+
     end
 end
 
@@ -314,19 +381,11 @@ function ShopScene:switch_stock()
     end
 
     if self.stock_type == self.shop.stock_types.BULLETS then
-        local barrel_bullets_xy = {
-            {self.barrel_xy[1], self.barrel_xy[2]-23},
-            {self.barrel_xy[1]+20, self.barrel_xy[2]-11},
-            {self.barrel_xy[1]+20, self.barrel_xy[2]+11},
-            {self.barrel_xy[1], self.barrel_xy[2]+23},
-            {self.barrel_xy[1]-20, self.barrel_xy[2]+11},
-            {self.barrel_xy[1]-20, self.barrel_xy[2]-11}
-        }
         for i, v in pairs(self.player.bullets) do
             if v then
                 self.entities["player_bullet_" .. i] = Item(
                     "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                    x=barrel_bullets_xy[i][1], y=barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
+                    x=self.barrel_bullets_xy[i][1], y=self.barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
                     sprite_sheet="bullets", sprite_tag=v.tag, depth=230, item=v, draggable=true, hoverable=true
                 })
             end
