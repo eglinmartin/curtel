@@ -43,9 +43,10 @@ function ShopScene:enter()
 
     self.animation_title = 0
     self.animation_stock = 0
-    self.stock_type = self.shop.stock_types.BULLETS
+    self.stock_type = self.shop.stock_types.CARDS
     self.hovering = false
 
+    self.barrel_xy = {190, 53}
     self.shop_bullets_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
     self.shop_cards_xy = {{89, 55}, {105, 55}, {121, 55}, {137, 55}}
 
@@ -63,6 +64,8 @@ function ShopScene:enter()
         {x=138.5, y=19.5, w=15, h=15, s=1, r=0,sprite_sheet="icons", sprite_tag="right", depth=128, draggable=false}
     )
     self.entities["category_l"]:create_sprite()
+
+    self.event_manager:trigger(self.event_manager.events.SWITCHSTOCK_RIGHT)
 
     self.render_manager:set_shadow_colour(Colours.GREEN5)
     self.render_manager.draw_objects_background["background"]:animate({dx=-4, dscale=0.1})
@@ -159,11 +162,14 @@ function ShopScene:animate_stock()
 
         -- Draw gun barrel and player's bullets
         if self.stock_type == self.shop.stock_types.BULLETS then
-            local barrel_xy = {190, 53}
-            self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", barrel_xy[1], barrel_xy[2], 0, 1, 128)
-            self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", barrel_xy[1], barrel_xy[2], 0, 1, 129)
+            self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", self.barrel_xy[1], self.barrel_xy[2], 0, 1, 128)
+            self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", self.barrel_xy[1], self.barrel_xy[2], 0, 1, 129)
             self.render_manager.draw_objects_foreground["barrel_base"]:animate({dx=2*self.stock_direction})
             self.render_manager.draw_objects_foreground["barrel_chambers"]:animate({dx=2*self.stock_direction})
+            for i, v in ipairs(self.player.bullets) do
+                self.entities["player_bullet_" .. i].dx = self.render_manager.draw_objects_foreground["barrel_chambers"].dx
+                self.entities["player_bullet_" .. i]:create_sprite()
+            end
         end
         
     end
@@ -274,6 +280,28 @@ end
 function ShopScene:switch_stock()
     if self.stock_type == self.shop.stock_types.BULLETS then
         self.stock_type = self.shop.stock_types.CARDS
+    elseif self.stock_type == self.shop.stock_types.CARDS then
+        self.stock_type = self.shop.stock_types.BULLETS
+    end
+
+    if self.stock_type == self.shop.stock_types.BULLETS then
+        local barrel_bullets_xy = {
+            {self.barrel_xy[1], self.barrel_xy[2]-23},
+            {self.barrel_xy[1]+20, self.barrel_xy[2]-11},
+            {self.barrel_xy[1]+20, self.barrel_xy[2]+11},
+            {self.barrel_xy[1], self.barrel_xy[2]+23},
+            {self.barrel_xy[1]-20, self.barrel_xy[2]+11},
+            {self.barrel_xy[1]-20, self.barrel_xy[2]-11}
+        }
+        for i, v in ipairs(self.player.bullets) do
+            self.entities["player_bullet_" .. i] = Item(
+                "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                x=barrel_bullets_xy[i][1], y=barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
+                sprite_sheet="bullets", sprite_tag=v.tag, depth=230, item=v, draggable=true
+            })
+        end
+
+    else
         self.render_manager:remove_draw_object_foreground("barrel_base")
         self.render_manager:remove_draw_object_foreground("barrel_chambers")
         for i = 1, #self.shop.stock["bullets"] do
@@ -284,8 +312,16 @@ function ShopScene:switch_stock()
             end
         end
 
-    elseif self.stock_type == self.shop.stock_types.CARDS then
-        self.stock_type = self.shop.stock_types.BULLETS
+        for i, v in ipairs(self.player.bullets) do
+            if self.entities["player_bullet_" .. i] then
+                self.entities["player_bullet_" .. i]:clear_sprite()
+                self.entities["player_bullet_" .. i] = nil
+            end
+        end
+    end
+
+    if self.stock_type == self.shop.stock_types.CARDS then
+    else
         for i = 1, #self.shop.stock["cards"] do
             if self.entities["shop_item_" .. i] then
                 self.entities["shop_item_" .. i]:clear_sprite()
@@ -293,6 +329,8 @@ function ShopScene:switch_stock()
                 self.render_manager.text_objects["shop_item_cost_" .. i] = nil
             end
         end
+
+
     end
 
     self.animation_stock = 0
