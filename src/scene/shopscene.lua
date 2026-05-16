@@ -330,6 +330,7 @@ function ShopScene:animate_dragging(dt)
     for key, entity in pairs(self.entities) do
         if entity ~= EMPTY then
             local entity_id = tonumber(entity.id:match("(%d+)$"))
+            local buy_tolerance = 7
 
             -- Bin player bullet if above dustbin
             if string.find(key, "player_bullet_") and entity.released then
@@ -344,8 +345,36 @@ function ShopScene:animate_dragging(dt)
                 end
             end
 
+            -- Move player bullet in barrel
+            if string.find(key, "player_bullet_") and entity.released then
+                for i, xy in ipairs(self.barrel_bullets_xy) do
+                    if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
+                        if self.player.bullets[i] == nil then
+                            local bullet_i = tonumber(key:match("player_bullet_(%d+)"))
+                            if bullet_i then
+
+                                 -- Create new player bullet item
+                                self.entities["player_bullet_" .. i] = Item(
+                                    "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                                    x=self.barrel_bullets_xy[i][1], y=self.barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
+                                    sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
+                                })
+                                self.player.bullets[i] = entity.item
+                                self.entities["player_bullet_" .. i]:create_sprite()
+                                self.entities["player_bullet_" .. i]:animate({dscale=0.5})
+
+                                -- Remove existing bullet
+                                self.player.bullets[bullet_i] = nil
+                                self.entities["player_bullet_" .. bullet_i]:clear_sprite()
+                                self.entities["player_bullet_" .. bullet_i] = nil
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+
             -- Buy item
-            local buy_tolerance = 7
             if string.find(key, "shop_item_") and entity.released then
                 for i, xy in ipairs(self.barrel_bullets_xy) do
                     if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
