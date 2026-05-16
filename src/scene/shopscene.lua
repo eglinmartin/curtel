@@ -298,6 +298,102 @@ function ShopScene:animate_hovering(dt)
 end
 
 
+function ShopScene:discard_bullet(key, entity)
+    if math.abs(entity.release_x - self.bin_xy[1]) <= 15 and math.abs(entity.release_y - self.bin_xy[2]) <= 18 then
+        entity:clear_sprite()
+        self.entities[key] = EMPTY
+        local i = tonumber(key:match("player_bullet_(%d+)"))
+        if i then
+            self.player.bullets[i] = nil
+            self.entities["dustbin"]:animate({dscale=-0.2})
+        end
+    end
+end
+
+
+function ShopScene:move_bullet(key, entity)
+    local buy_tolerance = 7
+    for i, xy in ipairs(self.barrel_bullets_xy) do
+        if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
+            if self.player.bullets[i] == nil then
+                local bullet_i = tonumber(key:match("player_bullet_(%d+)"))
+                if bullet_i then
+
+                    -- Create new player bullet item
+                    self.entities["player_bullet_" .. i] = Item(
+                        "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                        x=self.barrel_bullets_xy[i][1], y=self.barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
+                        sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
+                    })
+                    self.player.bullets[i] = entity.item
+                    self.entities["player_bullet_" .. i]:create_sprite()
+                    self.entities["player_bullet_" .. i]:animate({dscale=0.5})
+
+                    -- Remove old bullet item
+                    self.player.bullets[bullet_i] = nil
+                    self.entities["player_bullet_" .. bullet_i]:clear_sprite()
+                    self.entities["player_bullet_" .. bullet_i] = nil
+                end
+            end
+        end
+    end
+end
+
+
+function ShopScene:buy_bullet(key, entity)
+    local buy_tolerance = 7
+    local entity_id = tonumber(entity.id:match("(%d+)$"))
+    
+    for i, xy in ipairs(self.barrel_bullets_xy) do
+        if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
+            if self.player.bullets[i] == nil then
+                
+                -- If player can afford it:
+                if self.player.money >= entity.item.cost then
+                    self.player.money = self.player.money - entity.item.cost
+                    self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 66, 0, 1, 64, "left")
+                    self.render_manager.text_objects["player_money"]:animate({dx=-3})
+                    self.render_manager.draw_objects_foreground["hud_player_money"]:animate({dscale=0.8})
+                    
+                    -- Buy item
+                    self.player.bullets[i] = entity.item
+
+                    -- Remove item from shop stock
+                    entity:clear_sprite()
+                    self.entities[key] = nil
+                    self.shop.stock["bullets"][entity_id] = EMPTY
+                    self.render_manager:remove_text_object("shop_item_cost_" .. entity_id)
+                    
+                    -- Update costs
+                    for j = 1, #self.shop.stock[self.stock_type] do
+                        local v = self.shop.stock[self.stock_type][j]
+                        self:redraw_cost(j, v)
+                    end
+                    self.render_manager.text_objects["shop_item_cost_" .. entity_id]:animate({dscale=0.5, dy=-4})
+
+                    -- Create new player bullet item and animate
+                    self.entities["player_bullet_" .. i] = Item(
+                        "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                        x=self.barrel_bullets_xy[i][1], y=self.barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
+                        sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
+                    })
+                    self.entities["player_bullet_" .. i]:create_sprite()
+                    self.entities["player_bullet_" .. i]:animate({dscale=0.5})
+                    break
+
+                -- If player can't afford it, emphasize cost
+                else
+                    if self.render_manager.text_objects["shop_item_cost_" .. entity_id] then
+                        self.render_manager.text_objects["shop_item_cost_" .. entity_id]:animate({dscale=0.5, dy=-4})
+                    end
+                end
+                
+            end
+        end
+    end
+end
+
+
 function ShopScene:animate_dragging(dt)
     local drag_entities = {}
     for _, entity in pairs(self.entities) do
@@ -326,103 +422,23 @@ function ShopScene:animate_dragging(dt)
         end
     end
 
-    -- Release
+    -- Release dragged entity
     for key, entity in pairs(self.entities) do
         if entity ~= EMPTY then
-            local entity_id = tonumber(entity.id:match("(%d+)$"))
-            local buy_tolerance = 7
 
-            -- Bin player bullet if above dustbin
+            -- Perform operations on player's bullets in barrel
             if string.find(key, "player_bullet_") and entity.released then
-                if math.abs(entity.release_x - self.bin_xy[1]) <= 15 and math.abs(entity.release_y - self.bin_xy[2]) <= 18 then
-                    entity:clear_sprite()
-                    self.entities[key] = EMPTY
-                    local i = tonumber(key:match("player_bullet_(%d+)"))
-                    if i then
-                        self.player.bullets[i] = nil
-                        self.entities["dustbin"]:animate({dscale=-0.2})
-                    end
-                end
+
+                -- Discard player bullet if above dustbin
+                self:discard_bullet(key, entity)
+
+                -- Move player bullet to empty slot in barrel
+                self:move_bullet(key, entity)
             end
 
-            -- Move player bullet in barrel
-            if string.find(key, "player_bullet_") and entity.released then
-                for i, xy in ipairs(self.barrel_bullets_xy) do
-                    if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
-                        if self.player.bullets[i] == nil then
-                            local bullet_i = tonumber(key:match("player_bullet_(%d+)"))
-                            if bullet_i then
-
-                                 -- Create new player bullet item
-                                self.entities["player_bullet_" .. i] = Item(
-                                    "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                                    x=self.barrel_bullets_xy[i][1], y=self.barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
-                                    sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
-                                })
-                                self.player.bullets[i] = entity.item
-                                self.entities["player_bullet_" .. i]:create_sprite()
-                                self.entities["player_bullet_" .. i]:animate({dscale=0.5})
-
-                                -- Remove existing bullet
-                                self.player.bullets[bullet_i] = nil
-                                self.entities["player_bullet_" .. bullet_i]:clear_sprite()
-                                self.entities["player_bullet_" .. bullet_i] = nil
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-
-            -- Buy item
+            -- Buy item from shop if moved to empty barrel chamber
             if string.find(key, "shop_item_") and entity.released then
-                for i, xy in ipairs(self.barrel_bullets_xy) do
-                    if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
-                        if self.player.bullets[i] == nil then
-                            
-                            -- If player can afford it:
-                            if self.player.money >= entity.item.cost then
-                                self.player.money = self.player.money - entity.item.cost
-                                self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 66, 0, 1, 64, "left")
-                                self.render_manager.text_objects["player_money"]:animate({dx=-3})
-                                self.render_manager.draw_objects_foreground["hud_player_money"]:animate({dscale=0.8})
-                                
-                                -- Buy item
-                                self.player.bullets[i] = entity.item
-
-                                -- Remove item from shop stock
-                                entity:clear_sprite()
-                                self.entities[key] = nil
-                                self.shop.stock["bullets"][entity_id] = EMPTY
-                                self.render_manager:remove_text_object("shop_item_cost_" .. entity_id)
-                                
-                                -- Update costs
-                                for j = 1, #self.shop.stock[self.stock_type] do
-                                    local v = self.shop.stock[self.stock_type][j]
-                                    self:redraw_cost(j, v)
-                                end
-                                self.render_manager.text_objects["shop_item_cost_" .. entity_id]:animate({dscale=0.5, dy=-4})
-
-                                -- Create new player bullet item and animate
-                                self.entities["player_bullet_" .. i] = Item(
-                                    "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                                    x=self.barrel_bullets_xy[i][1], y=self.barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
-                                    sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
-                                })
-                                self.entities["player_bullet_" .. i]:create_sprite()
-                                self.entities["player_bullet_" .. i]:animate({dscale=0.5})
-                                break
-
-                            -- If player can't afford it, emphasize cost
-                            else
-                                if self.render_manager.text_objects["shop_item_cost_" .. entity_id] then
-                                    self.render_manager.text_objects["shop_item_cost_" .. entity_id]:animate({dscale=0.5, dy=-4})
-                                end
-                            end
-                            
-                        end
-                    end
-                end
+                self:buy_bullet(key, entity)
             end
         end
     end
