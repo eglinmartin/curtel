@@ -16,7 +16,7 @@ function Player:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANA
 
     self.health = 10
     self.max_health = 10
-    self.money = 10
+    self.money = 100
 
     self.hand_size = 3
     self.hand = {}

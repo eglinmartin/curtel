@@ -38,7 +38,6 @@ function Shop:init()
     self.stock_types = StockTypes
     self:reroll_bullets()
     self:reroll_cards()
-
 end
 
 
