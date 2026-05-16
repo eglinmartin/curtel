@@ -15,7 +15,7 @@ end
 
 Bullets = {
     -- Bullets
-    BULLET_BRONZE = Bullet('bullet_bronze', 'bullet', 'Brass Round', 2, 1, false, "A dissapointingly weak hit (1 dmg)"),
+    BULLET_BRONZE = Bullet('bullet_bronze', 'bullet', 'Brass Round', 2, 1, false, "Disappointing (1 dmg)"),
     BULLET_SILVER = Bullet('bullet_silver', 'bullet', 'Silver Round', 3, 2, false, "Description"),
     BULLET_GOLD = Bullet('bullet_gold', 'bullet', 'Gold Round', 5, 3, false, "Description"),
     BULLET_TITANIUM = Bullet('bullet_titanium', 'bullet', 'Titanium Round', 5, 5, false, "Description"),

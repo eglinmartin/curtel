@@ -271,30 +271,59 @@ end
 
 
 function ShopScene:animate_hovering(dt)
-    -- Default to no hovering
+    local was_hovering = self.hovering
+    local prev_hovered_entity = self.hovered_entity  -- track previous entity
     self.hovering = false
+    self.hovered_entity = nil
 
-    -- Prevent items being hovered if any item is being dragged
     for key, entity in pairs(self.entities) do
         if entity.dragging then return end
     end
 
-    -- Loop through any card in player's hand
     for key, entity in pairs(self.entities) do
         if entity.hovered and entity.hoverable then
             self.hovering = true
+            self.hovered_entity = entity  -- store current hovered entity
 
-            -- If entity isn't being dragged, then enlarge and move pointer
             if not entity.dragging then
                 if self.render_manager.draw_objects_foreground[entity.id] then
                     self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
                 end
+
+                -- Trigger if hover just started OR if we switched to a different entity
+                if not was_hovering or prev_hovered_entity ~= entity then
+                    if string.find(key, "shop_item_") or string.find(key, "player_bullet_") then
+                        self:show_tooltip(entity.item)
+                    end
+                end
             end
 
-            -- Break so that no other items hover - only one at a time
             break
         end
     end
+
+    if not self.hovering then
+        self.render_manager:remove_text_object("item_name")
+        self.render_manager:remove_text_object("item_description")
+    end
+end
+
+
+function ShopScene:show_tooltip(item)
+    local colour = Colours.GREY2
+    if item.type == 'health' then
+        colour = Colours.GREEN2
+    elseif item.type == 'money' then
+        colour = Colours.YELLOW1
+    elseif item.type == 'damage' then
+        colour = Colours.RED2
+    end
+
+    self.render_manager:create_text_object("item_name", item.name:upper(), colour, 83, 102, 0, 1, 64, "left")
+    self.render_manager.text_objects["item_name"]:animate({dy=4})
+
+    self.render_manager:create_text_object("item_description", item.description, Colours.GREY3, 83, 113, 0, 1, 64, "left")
+    self.render_manager.text_objects["item_description"]:animate({dy=4})
 end
 
 
