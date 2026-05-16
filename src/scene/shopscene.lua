@@ -58,7 +58,7 @@ function ShopScene:enter()
         }
     
     self.shop_bullets_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
-    self.shop_cards_xy = {{89, 55}, {105, 55}, {121, 55}, {137, 55}}
+    self.shop_cards_xy = {{91, 39}, {113, 39}, {135, 39}, {91, 71}, {113, 71}, {135, 71}}
 
     self.render_manager:create_draw_object_background("background", "background", "green", 120, 67.5, 0, 1, 1)
     self.render_manager:create_draw_object_foreground("divider_vertical", "divider_vertical", "green", 72, 67.5, 0, 1, 1)
@@ -208,7 +208,7 @@ function ShopScene:animate_stock()
             if self.stock_type == self.shop.stock_types.BULLETS then
                 self.stock_frame = 1 + (4 * (i-1))
             elseif self.stock_type == self.shop.stock_types.CARDS then
-                self.stock_frame = 1 + (6 * (i-1))
+                self.stock_frame = 1 + (4 * (i-1))
             end
             if self.animation_stock == self.stock_frame then
 
@@ -313,27 +313,44 @@ end
 
 function ShopScene:move_bullet(key, entity)
     local buy_tolerance = 7
-    for i, xy in ipairs(self.barrel_bullets_xy) do
+    for barrel_bullet_i, xy in ipairs(self.barrel_bullets_xy) do
         if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
-            if self.player.bullets[i] == nil then
-                local bullet_i = tonumber(key:match("player_bullet_(%d+)"))
-                if bullet_i then
+            local picked_up_bullet_i = tonumber(key:match("player_bullet_(%d+)"))
+            if picked_up_bullet_i then
 
-                    -- Create new player bullet item
-                    self.entities["player_bullet_" .. i] = Item(
-                        "player_bullet_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                        x=self.barrel_bullets_xy[i][1], y=self.barrel_bullets_xy[i][2], w=19, h=19, s=1, r=0,
-                        sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
-                    })
-                    self.player.bullets[i] = entity.item
-                    self.entities["player_bullet_" .. i]:create_sprite()
-                    self.entities["player_bullet_" .. i]:animate({dscale=0.5})
+                -- Store the picked up bullet
+                local picked_up_entity = self.entities["player_bullet_" .. picked_up_bullet_i].item
 
+                -- If chamber is empty, simply destroy the picked-up bullet (nothing to replace it with)
+                if self.entities["player_bullet_" .. barrel_bullet_i] == nil or self.entities["player_bullet_" .. barrel_bullet_i] == EMPTY then
                     -- Remove old bullet item
-                    self.player.bullets[bullet_i] = nil
-                    self.entities["player_bullet_" .. bullet_i]:clear_sprite()
-                    self.entities["player_bullet_" .. bullet_i] = nil
+                    self.player.bullets[picked_up_bullet_i] = nil
+                    self.entities["player_bullet_" .. picked_up_bullet_i]:clear_sprite()
+                    self.entities["player_bullet_" .. picked_up_bullet_i] = nil
+
+                -- If chamber isn't empty, then replace the picked-up bullet's item with the stored chamber's item
+                else
+                    -- Store the barrel bullet and replace the picked up bullet with the stored barrel bullet
+                    local barrel_entity = self.entities["player_bullet_" .. barrel_bullet_i].item
+                    self.entities["player_bullet_" .. picked_up_bullet_i].item = barrel_entity
+                    self.player.bullets[picked_up_bullet_i] = barrel_entity
+
+                    -- Update sprite tags for each bullet and redraw
+                    self.entities["player_bullet_" .. picked_up_bullet_i].sprite_tag = barrel_entity.tag
+                    self.entities["player_bullet_" .. picked_up_bullet_i]:create_sprite()
+                    self.entities["player_bullet_" .. barrel_bullet_i].sprite_tag = picked_up_entity.tag
+                    self.entities["player_bullet_" .. barrel_bullet_i]:create_sprite()
                 end
+
+                -- Create new player bullet item
+                self.player.bullets[barrel_bullet_i] = picked_up_entity
+                self.entities["player_bullet_" .. barrel_bullet_i] = Item(
+                    "player_bullet_" .. barrel_bullet_i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                    x=self.barrel_bullets_xy[barrel_bullet_i][1], y=self.barrel_bullets_xy[barrel_bullet_i][2], w=19, h=19, s=1, r=0,
+                    sprite_sheet="bullets", sprite_tag=picked_up_entity.tag, depth=230, item=picked_up_entity, draggable=true, hoverable=true
+                })
+                self.entities["player_bullet_" .. barrel_bullet_i]:create_sprite()
+                self.entities["player_bullet_" .. barrel_bullet_i]:animate({dscale=0.5})
             end
         end
     end
@@ -343,7 +360,7 @@ end
 function ShopScene:buy_bullet(key, entity)
     local buy_tolerance = 7
     local entity_id = tonumber(entity.id:match("(%d+)$"))
-    
+
     for i, xy in ipairs(self.barrel_bullets_xy) do
         if math.abs(entity.release_x - xy[1]) <= buy_tolerance and math.abs(entity.release_y - xy[2]) <= buy_tolerance then
             if self.player.bullets[i] == nil then
