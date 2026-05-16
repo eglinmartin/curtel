@@ -350,7 +350,8 @@ function ShopScene:move_bullet(key, entity)
                     sprite_sheet="bullets", sprite_tag=picked_up_entity.tag, depth=230, item=picked_up_entity, draggable=true, hoverable=true
                 })
                 self.entities["player_bullet_" .. barrel_bullet_i]:create_sprite()
-                self.entities["player_bullet_" .. barrel_bullet_i]:animate({dscale=0.5})
+                self.entities["player_bullet_" .. barrel_bullet_i]:animate({dscale=-0.25})
+                self.render_manager.draw_objects_foreground["barrel_base"]:animate({dscale=-0.025})
             end
         end
     end
@@ -395,7 +396,8 @@ function ShopScene:buy_bullet(key, entity)
                         sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
                     })
                     self.entities["player_bullet_" .. i]:create_sprite()
-                    self.entities["player_bullet_" .. i]:animate({dscale=0.5})
+                    self.entities["player_bullet_" .. i]:animate({dscale=-0.25})
+                    self.render_manager.draw_objects_foreground["barrel_base"]:animate({dscale=-0.025})
                     break
 
                 -- If player can't afford it, emphasize cost
