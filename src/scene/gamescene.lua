@@ -167,6 +167,7 @@ function GameScene:create_sprites()
                 "player_bullet_icon" .. i, GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
                     x=bullet_icons_xy[i][1], y=bullet_icons_xy[i][2], w=8, h=8, s=1, r=0,
                     sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200,
+                    hoverable=true
                 }
             )
             self.entities["player_bullet_icon" .. i]:create_sprite()
@@ -237,7 +238,8 @@ function GameScene:animate_dealing(dt)
                 self.entities["player_card_" .. i] = Item(
                     "player_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
                     x=11.5+(11*i), y=101.5+(3*i), w=15, h=19, s=1, r=0,
-                    sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i], draggable=true
+                    sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i],
+                    draggable=true, hoverable=true
                 })
                 self.entities["player_card_" .. i]:animate({dx=-3-(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
 
@@ -253,28 +255,31 @@ function GameScene:animate_dealing(dt)
 end
 
 
-function GameScene:animate_card_hovering(dt)
-    -- Default to no hovering
+function GameScene:animate_hovering(dt)
+    local was_hovering = self.hovering
+    local prev_hovered_entity = self.hovered_entity  -- track previous entity
     self.hovering = false
+    self.hovered_entity = nil
 
-    -- Loop through any card in player's hand
     for key, entity in pairs(self.entities) do
-        if key:match("^player_card_") and entity.hovered then
+        if entity.dragging then return end
+    end
+
+    for key, entity in pairs(self.entities) do
+        if entity.hovered and entity.hoverable then
             self.hovering = true
+            self.hovered_entity = entity  -- store current hovered entity
 
-            -- Animate the pointer if first time card has been selected
-            if self.player.selected_card ~= entity.item then
-                self.pointer:animate({dy=-2})
-                self.player.selected_card = entity.item
-            end
-
-            -- If card isn't being dragged, then enlarge and move pointer
             if not entity.dragging then
-                self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
-                self.pointer:move(entity.x, entity.y - 18)
+                if self.render_manager.draw_objects_foreground[entity.id] then
+                    self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
+                end
+
+                -- Trigger if hover just started OR if we switched to a different entity
+                if not was_hovering or prev_hovered_entity ~= entity then
+                end
             end
 
-            -- Break so that no other cards hover - only one at a time
             break
         end
     end
@@ -332,7 +337,7 @@ function GameScene:update(dt, mx, my, md, mp)
     -- Perform animations
     self:animate_dragging()
     self:animate_dealing()
-    self:animate_card_hovering()
+    self:animate_hovering()
 
     self.render_manager:create_text_object(
         "fps", "FPS: " .. love.timer.getFPS(), Colours.GREY1, 120, 6, 0, 1, 64, "centre"
