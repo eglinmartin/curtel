@@ -17,7 +17,7 @@ function GameState:init(GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAG
         x=0, y=0, w=20, h=32, s=1, r=0, sprite_sheet="player", sprite_tag="idle", depth=128, draggable=false
     })
     self.player.deck = Deck(self.player)
-    self.player.bullets = {Bullets.BULLET_BRONZE, nil, Bullets.BULLET_GOLD, Bullets.BULLET_TITANIUM, Bullets.HEALTH_BEER, Bullets.HEALTH_WHISKY}
+    self.player.bullets = {Bullets.BULLET_BRONZE, Bullets.BULLET_BRONZE, Bullets.BULLET_BRONZE, Bullets.BULLET_BRONZE, Bullets.BULLET_BRONZE, Bullets.BULLET_BRONZE}
 
     -- Create persistent cursor entity
     self.cursor = Entity("cursor", GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {

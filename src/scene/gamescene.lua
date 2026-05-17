@@ -40,7 +40,7 @@ function GameScene:enter()
     self.render_manager:clear_screen()
 
     -- Update player
-    self.player:move(82,103)
+    self.player:move(76,103)
     self.player:create_sprite()
     self.player.hand = {}
 
@@ -86,7 +86,7 @@ function GameScene:setup_events()
             if self.player.selected_card then
                 self.render_manager:create_draw_object_foreground(
                     "player_card_large", "cards_large_" .. self.player.selected_card.suit,
-                    self.player.selected_card.value, 88.5, 52.5, math.random(-5, 5), 1, 125
+                    self.player.selected_card.value, 120.5, 52.5, math.random(-5, 5), 1, 125
                 )
                 self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.3})
             end
@@ -152,6 +152,25 @@ function GameScene:create_sprites()
         self.render_manager:create_text_object(
             "player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 58, 0, 1, 64, "left"
         )
+
+        local bullet_icons_xy = {
+            {self.player.x, self.player.y - 39},
+            {self.player.x + 7, self.player.y - 34},
+            {self.player.x + 7, self.player.y - 27},
+            {self.player.x, self.player.y - 22},
+            {self.player.x - 7, self.player.y - 27},
+            {self.player.x - 7, self.player.y - 34}
+            
+        }
+        for i, bullet in pairs(self.player.bullets) do
+            self.entities["player_bullet_icon" .. i] = Entity(
+                "player_bullet_icon" .. i, GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
+                    x=bullet_icons_xy[i][1], y=bullet_icons_xy[i][2], w=8, h=8, s=1, r=0,
+                    sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200,
+                }
+            )
+            self.entities["player_bullet_icon" .. i]:create_sprite()
+        end
     end
 
 end
@@ -174,6 +193,10 @@ function GameScene:animate_enter()
         self.render_manager.text_objects["player_health"]:animate({dy=4})
         self.render_manager.text_objects["player_money"]:animate({dy=4})
         self.render_manager.text_objects["player_deck"]:animate({dy=4})
+
+        for i, bullet in pairs(self.player.bullets) do
+            self.render_manager.draw_objects_foreground["player_bullet_icon" .. i]:animate({dy=4})
+        end
     end 
 end
 
@@ -287,7 +310,7 @@ function GameScene:animate_dragging(dt)
         end
 
         if entity.released and entity.id:find("player_card_") then
-            if math.abs(self.input_manager.mx - 88.5) <= 16 and math.abs(self.input_manager.my - 52.5) <= 22 then
+            if math.abs(self.input_manager.mx - 120) <= 16 and math.abs(self.input_manager.my - 52.5) <= 22 then
                 self.event_manager:trigger(self.event_manager.events.SELECTCARD)
                 entity:clear_sprite()
                 self.entities[entity.id] = nil
