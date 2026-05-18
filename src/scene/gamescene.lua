@@ -135,7 +135,7 @@ function GameScene:create_sprites()
             "hud_player_health", "icons", "heart", 19.5, 38.5, 0, 1, 128
         )
         self.render_manager:create_text_object(
-            "player_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health),
+            "player_health", tostring(self.player.health),
             Colours.RED1, 26, 36, 0, 1, 64, "left"
         )
 
@@ -163,14 +163,13 @@ function GameScene:create_sprites()
             
         }
         for i, bullet in pairs(self.player.bullets) do
-            self.entities["player_bullet_icon" .. i] = Entity(
+            self.entities["player_bullet_icon_" .. i] = Entity(
                 "player_bullet_icon" .. i, GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
                     x=bullet_icons_xy[i][1], y=bullet_icons_xy[i][2], w=8, h=8, s=1, r=0,
-                    sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200,
-                    hoverable=true
+                    sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200
                 }
             )
-            self.entities["player_bullet_icon" .. i]:create_sprite()
+            self.entities["player_bullet_icon_" .. i]:create_sprite()
         end
     end
 
@@ -283,6 +282,18 @@ function GameScene:animate_hovering(dt)
             break
         end
     end
+
+    if not self.hovering then
+    end
+end
+
+
+function GameScene:show_bullet_preview(bullet)
+    self.render_manager:create_draw_object_foreground(
+        "player_bullet_preview", "bullets",
+        bullet.item.tag, self.player.x-0.5, self.player.y-58, 0, 1, 125
+    )
+    self.render_manager.draw_objects_foreground["player_bullet_preview"]:animate({dy=4})
 end
 
 
@@ -315,7 +326,7 @@ function GameScene:animate_dragging(dt)
         end
 
         if entity.released and entity.id:find("player_card_") then
-            if math.abs(self.input_manager.mx - 120) <= 16 and math.abs(self.input_manager.my - 52.5) <= 22 then
+            if math.abs(self.input_manager.mx - 120) <= 16 and math.abs(self.input_manager.my - 52.5) <= 32 then
                 self.event_manager:trigger(self.event_manager.events.SELECTCARD)
                 entity:clear_sprite()
                 self.entities[entity.id] = nil
