@@ -40,7 +40,7 @@ function GameScene:enter()
     self.render_manager:clear_screen()
 
     -- Update player
-    self.player:move(82,103)
+    self.player:move(76,103)
     self.player:create_sprite()
     self.player.hand = {}
 
@@ -86,7 +86,7 @@ function GameScene:setup_events()
             if self.player.selected_card then
                 self.render_manager:create_draw_object_foreground(
                     "player_card_large", "cards_large_" .. self.player.selected_card.suit,
-                    self.player.selected_card.value, 88.5, 52.5, math.random(-5, 5), 1, 125
+                    self.player.selected_card.value, 120.5, 52.5, math.random(-5, 5), 1, 125
                 )
                 self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.3})
             end
@@ -135,7 +135,7 @@ function GameScene:create_sprites()
             "hud_player_health", "icons", "heart", 19.5, 38.5, 0, 1, 128
         )
         self.render_manager:create_text_object(
-            "player_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health),
+            "player_health", tostring(self.player.health),
             Colours.RED1, 26, 36, 0, 1, 64, "left"
         )
 
@@ -152,6 +152,25 @@ function GameScene:create_sprites()
         self.render_manager:create_text_object(
             "player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 58, 0, 1, 64, "left"
         )
+
+        local bullet_icons_xy = {
+            {self.player.x, self.player.y - 39},
+            {self.player.x + 7, self.player.y - 34},
+            {self.player.x + 7, self.player.y - 27},
+            {self.player.x, self.player.y - 22},
+            {self.player.x - 7, self.player.y - 27},
+            {self.player.x - 7, self.player.y - 34}
+            
+        }
+        for i, bullet in pairs(self.player.bullets) do
+            self.entities["player_bullet_icon_" .. i] = Entity(
+                "player_bullet_icon" .. i, GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
+                    x=bullet_icons_xy[i][1], y=bullet_icons_xy[i][2], w=8, h=8, s=1, r=0,
+                    sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200
+                }
+            )
+            self.entities["player_bullet_icon_" .. i]:create_sprite()
+        end
     end
 
 end
@@ -174,6 +193,10 @@ function GameScene:animate_enter()
         self.render_manager.text_objects["player_health"]:animate({dy=4})
         self.render_manager.text_objects["player_money"]:animate({dy=4})
         self.render_manager.text_objects["player_deck"]:animate({dy=4})
+
+        for i, bullet in pairs(self.player.bullets) do
+            self.render_manager.draw_objects_foreground["player_bullet_icon" .. i]:animate({dy=4})
+        end
     end 
 end
 
@@ -214,7 +237,8 @@ function GameScene:animate_dealing(dt)
                 self.entities["player_card_" .. i] = Item(
                     "player_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
                     x=11.5+(11*i), y=101.5+(3*i), w=15, h=19, s=1, r=0,
-                    sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i], draggable=true
+                    sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i],
+                    draggable=true, hoverable=true
                 })
                 self.entities["player_card_" .. i]:animate({dx=-3-(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
 
@@ -230,31 +254,46 @@ function GameScene:animate_dealing(dt)
 end
 
 
-function GameScene:animate_card_hovering(dt)
-    -- Default to no hovering
+function GameScene:animate_hovering(dt)
+    local was_hovering = self.hovering
+    local prev_hovered_entity = self.hovered_entity  -- track previous entity
     self.hovering = false
+    self.hovered_entity = nil
 
-    -- Loop through any card in player's hand
     for key, entity in pairs(self.entities) do
-        if key:match("^player_card_") and entity.hovered then
+        if entity.dragging then return end
+    end
+
+    for key, entity in pairs(self.entities) do
+        if entity.hovered and entity.hoverable then
             self.hovering = true
+            self.hovered_entity = entity  -- store current hovered entity
 
-            -- Animate the pointer if first time card has been selected
-            if self.player.selected_card ~= entity.item then
-                self.pointer:animate({dy=-2})
-                self.player.selected_card = entity.item
-            end
-
-            -- If card isn't being dragged, then enlarge and move pointer
             if not entity.dragging then
-                self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
-                self.pointer:move(entity.x, entity.y - 18)
+                if self.render_manager.draw_objects_foreground[entity.id] then
+                    self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
+                end
+
+                -- Trigger if hover just started OR if we switched to a different entity
+                if not was_hovering or prev_hovered_entity ~= entity then
+                end
             end
 
-            -- Break so that no other cards hover - only one at a time
             break
         end
     end
+
+    if not self.hovering then
+    end
+end
+
+
+function GameScene:show_bullet_preview(bullet)
+    self.render_manager:create_draw_object_foreground(
+        "player_bullet_preview", "bullets",
+        bullet.item.tag, self.player.x-0.5, self.player.y-58, 0, 1, 125
+    )
+    self.render_manager.draw_objects_foreground["player_bullet_preview"]:animate({dy=4})
 end
 
 
@@ -287,7 +326,7 @@ function GameScene:animate_dragging(dt)
         end
 
         if entity.released and entity.id:find("player_card_") then
-            if math.abs(self.input_manager.mx - 88.5) <= 16 and math.abs(self.input_manager.my - 52.5) <= 22 then
+            if math.abs(self.input_manager.mx - 120) <= 16 and math.abs(self.input_manager.my - 52.5) <= 32 then
                 self.event_manager:trigger(self.event_manager.events.SELECTCARD)
                 entity:clear_sprite()
                 self.entities[entity.id] = nil
@@ -309,7 +348,7 @@ function GameScene:update(dt, mx, my, md, mp)
     -- Perform animations
     self:animate_dragging()
     self:animate_dealing()
-    self:animate_card_hovering()
+    self:animate_hovering()
 
     self.render_manager:create_text_object(
         "fps", "FPS: " .. love.timer.getFPS(), Colours.GREY1, 120, 6, 0, 1, 64, "centre"
