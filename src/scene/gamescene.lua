@@ -2,6 +2,8 @@ local Class = require("lib.class")
 local GameScene = Class{}
 
 local Colours = require("src.render.colours")
+local Deck = require("src.entity.deck")
+local Enemy = require("src.entity.enemy")
 local Entity = require("src.entity.entity")
 local Item = require("src.entity.item")
 
@@ -53,7 +55,14 @@ function GameScene:enter()
 
     self.pointer:create_sprite()
 
-    self:create_sprites()
+    self.render_manager:set_shadow_colour(Colours.GREEN5)
+    self.render_manager:create_draw_object_background("background", "background", "green", 120, 67.5, 0, 1, 255
+)   self.render_manager:create_draw_object_foreground("table", "table", "1", 120, 114.5, 0, 1, 128)
+
+    self.player_cards_xy = {}
+    self.enemy_cards_xy = {}
+
+    self:create_hud(self.player)
 
     self:animate_enter()
 
@@ -77,6 +86,14 @@ function GameScene:setup_events()
     self.event_manager:on(
         self.event_manager.events.DEALCARDS, self, function()
             self.animation_dealing = 0
+        end
+    )
+
+    -- Create enemy
+    self.event_manager:on(
+        self.event_manager.events.CREATEENEMY, self, function()
+            self:create_enemy()
+            self:create_hud(self.enemy)
         end
     )
 
@@ -111,66 +128,88 @@ function GameScene:setup_events()
 end
 
 
-function GameScene:create_sprites()
-    -- Draw background
-    self.render_manager:set_shadow_colour(Colours.GREEN5)
-    self.render_manager:create_draw_object_background(
-        "background", "background", "green", 120, 67.5, 0, 1, 255
-    )
+function GameScene:create_enemy()
+    self.enemy = Enemy("enemy", self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+        x=164, y=103, w=20, h=32, s=1, r=0, sprite_sheet="enemy1", sprite_tag="idle", depth=128,
+    })
+    self.enemy:create_sprite()
+    self.enemy:animate({dy=4})
+    self.enemy.deck = Deck()
+    self.entities['enemy'] = self.enemy
+end
 
-    -- Draw furniture
-    self.render_manager:create_draw_object_foreground(
-        "table", "table", "1", 120, 114.5, 0, 1, 128
-    )
 
-    if self.player then
-        self.render_manager:create_draw_object_foreground(
-            "hud_player_head", "player", "head", 24, 23, 0, 1, 128
-        )
-        self.render_manager:create_text_object(
-            "player_name", "PLAYER", Colours.YELLOW1, 38, 20, 0, 1, 64, "left"
-        )
+function GameScene:create_hud(character)
+    local x_coords = {24, 38, 19.5, 26}
+    local text_dir = "left"
+    local name = "player"
+    local sprite = "player"
+    
+    if character == self.enemy then
+        x_coords = {216, 202, 220.5, 215}
+        text_dir = "right"
+        name = "enemy"
+        sprite = "enemy1"
+    end
 
-        self.render_manager:create_draw_object_foreground(
-            "hud_player_health", "icons", "heart", 19.5, 38.5, 0, 1, 128
-        )
-        self.render_manager:create_text_object(
-            "player_health", tostring(self.player.health),
-            Colours.RED1, 26, 36, 0, 1, 64, "left"
-        )
+    self.render_manager:create_draw_object_foreground("hud_" .. name .. "_head", sprite, "head", x_coords[1], 23, 0, 1, 128)
+    self.render_manager.draw_objects_foreground["hud_" .. name .. "_head"]:animate({dy=4})
 
-        self.render_manager:create_draw_object_foreground(
-            "hud_player_money", "icons", "money", 19.5, 49.5, 0, 1, 128
-        )
-        self.render_manager:create_text_object(
-            "player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 47, 0, 1, 64, "left"
-        )
+    self.render_manager:create_text_object(name .. "_name", "PLAYER", Colours.YELLOW1, x_coords[2], 20, 0, 1, 64, text_dir)
+    self.render_manager.text_objects[name .. "_name"]:animate({dy=4})
+
+    self.render_manager:create_draw_object_foreground("hud_" .. name .. "_health", "icons", "heart", x_coords[3], 38.5, 0, 1, 128)
+    self.render_manager.draw_objects_foreground["hud_" .. name .. "_health"]:animate({dy=4})
+
+    self.render_manager:create_text_object(name .. "_health", tostring(character.health), Colours.RED1, x_coords[4], 36, 0, 1, 64, text_dir)
+    self.render_manager.text_objects[name .. "_health"]:animate({dy=4})
+
+    self.render_manager:create_draw_object_foreground("hud_" .. name .. "_money", "icons", "money", x_coords[3], 49.5, 0, 1, 128)
+    self.render_manager.draw_objects_foreground["hud_" .. name .. "_money"]:animate({dy=4})
+
+    self.render_manager:create_text_object(name .. "_money", "$" .. tostring(character.money), Colours.YELLOW1, x_coords[4], 47, 0, 1, 64, text_dir)
+    self.render_manager.text_objects[name .. "_money"]:animate({dy=4})
+    
+    self.render_manager:create_draw_object_foreground("hud_" .. name .. "_deck", "icons", "cards", x_coords[3] , 60.5, 0, 1, 140)
+    self.render_manager.draw_objects_foreground["hud_" .. name .. "_deck"]:animate({dy=4})
+
+    self.render_manager:create_text_object(name .. "_deck", tostring(#character.deck.cards), Colours.BROWN1, x_coords[4], 58, 0, 1, 64, text_dir)
+    self.render_manager.text_objects[name .. "_deck"]:animate({dy=4})
+
+    local bullet_icons_xy = {
+        {character.x, character.y - 39},
+        {character.x + 7, character.y - 34},
+        {character.x + 7, character.y - 27},
+        {character.x, character.y - 22},
+        {character.x - 7, character.y - 27},
+        {character.x - 7, character.y - 34}
         
-        self.render_manager:create_draw_object_foreground(
-            "hud_player_deck", "icons", "cards", 19.5, 60.5, 0, 1, 140
+    }
+    for i, bullet in pairs(character.bullets) do
+        self.entities[name .. "_bullet_icon_" .. i] = Entity(
+            name .. "_bullet_icon" .. i, GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
+                x=bullet_icons_xy[i][1], y=bullet_icons_xy[i][2], w=8, h=8, s=1, r=0,
+                sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200
+            }
         )
-        self.render_manager:create_text_object(
-            "player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 58, 0, 1, 64, "left"
-        )
+        self.entities[name .. "_bullet_icon_" .. i]:create_sprite()
+        self.entities[name .. "_bullet_icon_" .. i]:animate({dy=4})
+    end
 
-        local bullet_icons_xy = {
-            {self.player.x, self.player.y - 39},
-            {self.player.x + 7, self.player.y - 34},
-            {self.player.x + 7, self.player.y - 27},
-            {self.player.x, self.player.y - 22},
-            {self.player.x - 7, self.player.y - 27},
-            {self.player.x - 7, self.player.y - 34}
-            
-        }
-        for i, bullet in pairs(self.player.bullets) do
-            self.entities["player_bullet_icon_" .. i] = Entity(
-                "player_bullet_icon" .. i, GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
-                    x=bullet_icons_xy[i][1], y=bullet_icons_xy[i][2], w=8, h=8, s=1, r=0,
-                    sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200
-                }
-            )
-            self.entities["player_bullet_icon_" .. i]:create_sprite()
+    for i = 1, self.player.hand_size do
+        local x = 11.5+(11*i)
+        local y = 101.5+(3*i)
+        self.player_cards_xy[i] = {x, y}
+
+        if character == self.enemy then
+            x = 228.5-(11*i)
+            self.enemy_cards_xy[i] = {x, y}
         end
+
+        self.render_manager:create_draw_object_foreground(
+            name .. "_card_empty_" .. i, "cards_general", "empty", x, y, 0, 1, 128
+        )
+        self.render_manager.draw_objects_foreground[name .. "_card_empty_" .. i]:animate({dy=4})
     end
 
 end
@@ -207,6 +246,7 @@ function GameScene:animate_dealing(dt)
     -- Animate player dealing
     if self.player then
 
+
         -- Iterate over player hand size
         for i = 1, self.player.hand_size do
             self.card_frame = 1 + (8 * (i-1))
@@ -236,7 +276,7 @@ function GameScene:animate_dealing(dt)
                 local player_card = self.player.hand[i]
                 self.entities["player_card_" .. i] = Item(
                     "player_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                    x=11.5+(11*i), y=101.5+(3*i), w=15, h=19, s=1, r=0,
+                    x=self.player_cards_xy[i][1], y=self.player_cards_xy[i][2], w=15, h=19, s=1, r=0,
                     sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i],
                     draggable=true, hoverable=true
                 })
@@ -349,10 +389,6 @@ function GameScene:update(dt, mx, my, md, mp)
     self:animate_dragging()
     self:animate_dealing()
     self:animate_hovering()
-
-    self.render_manager:create_text_object(
-        "fps", "FPS: " .. love.timer.getFPS(), Colours.GREY1, 120, 6, 0, 1, 64, "centre"
-    )
 end
 
 
