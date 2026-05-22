@@ -366,7 +366,9 @@ function ShopScene:move_bullet(key, entity)
 
                     -- Update sprite tags for each bullet and redraw
                     self.entities["player_bullet_" .. picked_up_bullet_i].sprite_tag = barrel_entity.tag
+                    self.entities["player_bullet_" .. picked_up_bullet_i]:animate({dx=0, dy=0, dscale=0.1})
                     self.entities["player_bullet_" .. picked_up_bullet_i]:create_sprite()
+
                     self.entities["player_bullet_" .. barrel_bullet_i].sprite_tag = picked_up_entity.tag
                     self.entities["player_bullet_" .. barrel_bullet_i]:create_sprite()
                 end
