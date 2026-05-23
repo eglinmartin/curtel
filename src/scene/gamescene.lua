@@ -42,9 +42,11 @@ function GameScene:enter()
     self.render_manager:clear_screen()
 
     -- Update player
-    self.player:move(76,103)
+    self.player:move(74,103)
     self.player:create_sprite()
     self.player.hand = {}
+
+    self.enemy = nil
 
     -- Set up event handling
     self:setup_events()
@@ -103,7 +105,7 @@ function GameScene:setup_events()
             if self.player.selected_card then
                 self.render_manager:create_draw_object_foreground(
                     "player_card_large", "cards_large_" .. self.player.selected_card.suit,
-                    self.player.selected_card.value, 117.5, 40.5, -5, 1, 125
+                    self.player.selected_card.value, 112.5, 40.5, -5, 1, 125
                 )
                 self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.3})
             end
@@ -130,8 +132,9 @@ end
 
 function GameScene:create_enemy()
     self.enemy = Enemy("enemy", self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-        x=164, y=103, w=20, h=32, s=1, r=0, sprite_sheet="enemy1", sprite_tag="idle", depth=128,
+        x=166, y=103, w=20, h=32, s=1, r=0, sprite_sheet="enemy1", sprite_tag="idle", depth=128,
     })
+    self.enemy.money = 10
     self.enemy:create_sprite()
     self.enemy:animate({dy=4})
     self.enemy.deck = Deck()
@@ -197,12 +200,12 @@ function GameScene:create_hud(character)
     end
 
     for i = 1, self.player.hand_size do
-        local x = 11.5+(11*i)
+        local x = 11.5+(10*i)
         local y = 101.5+(3*i)
         self.player_cards_xy[i] = {x, y}
 
         if character == self.enemy then
-            x = 228.5-(11*i)
+            x = 228.5-(10*i)
             self.enemy_cards_xy[i] = {x, y}
         end
 
@@ -241,6 +244,16 @@ end
 
 
 function GameScene:animate_dealing(dt)
+    if self.animation_dealing == 0 then
+        if self.player then
+            self.player.hand = {}
+        end
+
+        if self.enemy then
+            self.enemy.hand = {}
+        end
+    end
+    
     self.animation_dealing = self.animation_dealing + 1
 
     -- Animate player dealing
@@ -252,13 +265,11 @@ function GameScene:animate_dealing(dt)
 
             -- On first frame, reset player's hand
             if self.animation_dealing == 1 then
-                self.player.hand = {}
                 if self.entities["player_card_" .. i] then
                     self.entities["player_card_" .. i]:clear_sprite()
                     self.entities["player_card_" .. i] = nil
                 end
                 if self.enemy then
-                    self.enemy.hand = {}
                     if self.entities["enemy_card_" .. i] then
                         self.entities["enemy_card_" .. i]:clear_sprite()
                         self.entities["enemy_card_" .. i] = nil
@@ -271,6 +282,7 @@ function GameScene:animate_dealing(dt)
 
                 -- Deal a card
                 self.player.hand[i] = self.player.deck:deal_card()
+
                 if self.enemy then
                     self.enemy.hand[i] = self.enemy.deck:deal_card()
                 end
@@ -320,10 +332,10 @@ function GameScene:animate_dealing(dt)
                     )
                     self.render_manager.text_objects["enemy_deck"]:animate({dx=-3})
                 end
-
             end
         end
     end
+
 end
 
 
@@ -404,6 +416,16 @@ function GameScene:animate_dragging(dt)
                 entity:clear_sprite()
                 self.entities[entity.id] = nil
                 self.player.hand[tonumber(entity.id:match("%d+"))] = nil
+
+                if self.enemy then
+                    local n = math.random(1, #self.enemy.hand)
+                    local card = table.remove(self.enemy.hand, n)
+                    self.render_manager:create_draw_object_foreground(
+                        "enemy_card_large", "cards_large_" .. card.suit,
+                        card.value, 127.5, 46.5, 5, 1, 126
+                    )
+                    self.render_manager.draw_objects_foreground["enemy_card_large"]:animate({dscale=0.3})
+                end
             end
         end
     end
