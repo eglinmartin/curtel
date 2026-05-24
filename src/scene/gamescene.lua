@@ -7,6 +7,8 @@ local Enemy = require("src.entity.enemy")
 local Entity = require("src.entity.entity")
 local Item = require("src.entity.item")
 
+local EMPTY = "empty"
+
 
 function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER)
     self.game_state = GAME_STATE
@@ -44,8 +46,9 @@ function GameScene:enter()
     -- Update player
     self.player:move(74,103)
     self.player:create_sprite()
-    self.player.hand = {}
+    self.player.hand = {EMPTY, EMPTY, EMPTY}
 
+    -- Create placeholder nil enemy object
     self.enemy = nil
 
     -- Set up event handling
@@ -246,11 +249,13 @@ end
 function GameScene:animate_dealing(dt)
     if self.animation_dealing == 0 then
         if self.player then
-            self.player.hand = {}
+            for i = 1, self.player.hand_size do
+                self.player.hand[i] = EMPTY
+            end
         end
 
         if self.enemy then
-            self.enemy.hand = {}
+            self.enemy.hand = {EMPTY, EMPTY, EMPTY}
         end
     end
     
@@ -281,10 +286,9 @@ function GameScene:animate_dealing(dt)
             if self.animation_dealing == self.card_frame then
 
                 -- Deal a card
-                self.player.hand[i] = self.player.deck:deal_card()
-
+                self.player.hand[i] = self.player.deck:deal_card(i)
                 if self.enemy then
-                    self.enemy.hand[i] = self.enemy.deck:deal_card()
+                    self.enemy.hand[i] = self.enemy.deck:deal_card(i)
                 end
 
                 -- If no more cards left after deal, reset and shuffle deck
@@ -373,15 +377,6 @@ function GameScene:animate_hovering(dt)
 end
 
 
-function GameScene:show_bullet_preview(bullet)
-    self.render_manager:create_draw_object_foreground(
-        "player_bullet_preview", "bullets",
-        bullet.item.tag, self.player.x-0.5, self.player.y-58, 0, 1, 125
-    )
-    self.render_manager.draw_objects_foreground["player_bullet_preview"]:animate({dy=4})
-end
-
-
 function GameScene:animate_dragging(dt)
     local drag_entities = {}
     for _, entity in pairs(self.entities) do
@@ -415,17 +410,7 @@ function GameScene:animate_dragging(dt)
                 self.event_manager:trigger(self.event_manager.events.SELECTCARD)
                 entity:clear_sprite()
                 self.entities[entity.id] = nil
-                self.player.hand[tonumber(entity.id:match("%d+"))] = nil
-
-                if self.enemy then
-                    local n = math.random(1, #self.enemy.hand)
-                    local card = table.remove(self.enemy.hand, n)
-                    self.render_manager:create_draw_object_foreground(
-                        "enemy_card_large", "cards_large_" .. card.suit,
-                        card.value, 127.5, 46.5, 5, 1, 126
-                    )
-                    self.render_manager.draw_objects_foreground["enemy_card_large"]:animate({dscale=0.3})
-                end
+                self.player.hand[tonumber(entity.id:match("%d+"))] = EMPTY
             end
         end
     end
@@ -444,6 +429,8 @@ function GameScene:update(dt, mx, my, md, mp)
     self:animate_dragging()
     self:animate_dealing()
     self:animate_hovering()
+
+    print(self.player.hand[1], self.player.hand[2], self.player.hand[3])
 end
 
 
