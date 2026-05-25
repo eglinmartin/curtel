@@ -14,7 +14,8 @@ local Events = {
     SWITCHSTOCK_LEFT = 'switch stock (left)',
     SWITCHSTOCK_RIGHT = 'switch stock (right)',
     TOGGLE_FULLSCREEN = 'toggle fullscreen',
-    MOUSEPRESSED = 'mouse pressed'
+    MOUSEPRESSED = 'mouse pressed',
+    CREATEENEMY = 'create enemy'
 }
 
 
