@@ -246,100 +246,98 @@ function GameScene:animate_enter()
 end
 
 
-function GameScene:animate_dealing(dt)
-    if self.animation_dealing == 0 then
-        if self.player then
-            for i = 1, self.player.hand_size do
-                self.player.hand[i] = EMPTY
+function GameScene:reset_hand(character)
+    if character == self.player then
+        for i = 1, self.player.hand_size do
+            self.player.hand[i] = EMPTY
+            if self.entities["player_card_" .. i] then
+                self.entities["player_card_" .. i]:clear_sprite()
+                self.entities["player_card_" .. i] = nil
             end
         end
 
-        if self.enemy then
-            self.enemy.hand = {EMPTY, EMPTY, EMPTY}
+    elseif character == self.enemy then
+        for i = 1, self.enemy.hand_size do
+            self.enemy.hand[i] = EMPTY
+            if self.enemy then
+                if self.entities["enemy_card_" .. i] then
+                    self.entities["enemy_card_" .. i]:clear_sprite()
+                    self.entities["enemy_card_" .. i] = nil
+                end
+            end
         end
     end
-    
+end
+
+
+function GameScene:animate_dealing(dt)
+    -- Tick animation timer
     self.animation_dealing = self.animation_dealing + 1
 
-    -- Animate player dealing
-    if self.player then
-
-        -- Iterate over player hand size
-        for i = 1, self.player.hand_size do
-            self.card_frame = 1 + (8 * (i-1))
-
-            -- On first frame, reset player's hand
-            if self.animation_dealing == 1 then
-                if self.entities["player_card_" .. i] then
-                    self.entities["player_card_" .. i]:clear_sprite()
-                    self.entities["player_card_" .. i] = nil
-                end
-                if self.enemy then
-                    if self.entities["enemy_card_" .. i] then
-                        self.entities["enemy_card_" .. i]:clear_sprite()
-                        self.entities["enemy_card_" .. i] = nil
-                    end
-                end
-            end
-
-            -- For each card, animate its dealing
-            if self.animation_dealing == self.card_frame then
-
-                -- Deal a card
-                self.player.hand[i] = self.player.deck:deal_card(i)
-                if self.enemy then
-                    self.enemy.hand[i] = self.enemy.deck:deal_card(i)
-                end
-
-                -- If no more cards left after deal, reset and shuffle deck
-                if #self.player.deck.cards == 0 then
-                    self.player.deck:reset()
-                    self.player.deck:shuffle()
-                end
-                if self.enemy then 
-                    if #self.enemy.deck.cards == 0 then
-                        self.enemy.deck:reset()
-                        self.enemy.deck:shuffle()
-                    end
-                end
-                
-                -- Create card entity on screen and animate
-                local player_card = self.player.hand[i]
-                self.entities["player_card_" .. i] = Item(
-                    "player_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                    x=self.player_cards_xy[i][1], y=self.player_cards_xy[i][2], w=15, h=19, s=1, r=0,
-                    sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i],
-                    draggable=true, hoverable=true
-                })
-                self.entities["player_card_" .. i]:animate({dx=-3-(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
-
-                -- Animate deck icon and number
-                self.render_manager.draw_objects_foreground["hud_player_deck"]:animate({dscale=0.3})
-                self.render_manager:create_text_object(
-                    "player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 58, 0, 1, 64, "left"
-                )
-                self.render_manager.text_objects["player_deck"]:animate({dx=3})
-
-                if self.enemy then
-                    local enemy_card = self.enemy.hand[i]
-                    self.entities["enemy_card_" .. i] = Item(
-                        "enemy_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                        x=self.enemy_cards_xy[i][1], y=self.enemy_cards_xy[i][2], w=15, h=19, s=1, r=0,
-                        sprite_sheet="cards_" .. enemy_card.suit, sprite_tag=enemy_card.value, depth=128+i, item=self.enemy.hand[i]
-                    })
-                    self.entities["enemy_card_" .. i]:animate({dx=3+(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
-
-                    -- Animate deck icon and number
-                    self.render_manager.draw_objects_foreground["hud_enemy_deck"]:animate({dscale=0.3})
-                    self.render_manager:create_text_object(
-                        "enemy_deck", tostring(#self.enemy.deck.cards), Colours.BROWN1, 207, 58, 0, 1, 64, "left"
-                    )
-                    self.render_manager.text_objects["enemy_deck"]:animate({dx=-3})
-                end
-            end
+    -- On first frame, reset player's hand
+    if self.animation_dealing == 1 then
+        self:reset_hand(self.player)
+        if self.enemy then
+            self:reset_hand(self.enemy)
         end
     end
 
+    -- If not first frame, iterate over player hand size
+    for i = 1, self.player.hand_size do
+        self.card_frame = 1 + (8 * (i-1))
+        if self.animation_dealing == self.card_frame then
+
+            -- Deal a card
+            self.player.hand[i] = self.player.deck:deal_card(i)
+            if self.enemy then
+                self.enemy.hand[i] = self.enemy.deck:deal_card(i)
+            end
+
+            -- If no more cards left after deal, reset and shuffle decks
+            if #self.player.deck.cards == 0 then
+                self.player.deck:reset()
+                self.player.deck:shuffle()
+            end
+            if self.enemy then
+                if #self.enemy.deck.cards == 0 then
+                    self.enemy.deck:reset()
+                    self.enemy.deck:shuffle()
+                end
+            end
+            
+            -- Create player card entity on screen and animate
+            local player_card = self.player.hand[i]
+            self.entities["player_card_" .. i] = Item(
+                "player_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                x=self.player_cards_xy[i][1], y=self.player_cards_xy[i][2], w=15, h=19, s=1, r=0,
+                sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i],
+                draggable=true, hoverable=true
+            })
+            self.entities["player_card_" .. i]:animate({dx=-3-(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
+
+            -- Create enemy card entity on screen and animate
+            if self.enemy then
+                local enemy_card = self.enemy.hand[i]
+                self.entities["enemy_card_" .. i] = Item(
+                    "enemy_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                    x=self.enemy_cards_xy[i][1], y=self.enemy_cards_xy[i][2], w=15, h=19, s=1, r=0,
+                    sprite_sheet="cards_" .. enemy_card.suit, sprite_tag=enemy_card.value, depth=128+i, item=self.enemy.hand[i]
+                })
+                self.entities["enemy_card_" .. i]:animate({dx=3+(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
+            end
+
+            -- Animate deck icons and numbers
+            self.render_manager.draw_objects_foreground["hud_player_deck"]:animate({dscale=0.3})
+            self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 58, 0, 1, 64, "left")
+            self.render_manager.text_objects["player_deck"]:animate({dx=3})
+            if self.enemy then
+                self.render_manager.draw_objects_foreground["hud_enemy_deck"]:animate({dscale=0.3})
+                self.render_manager:create_text_object("enemy_deck", tostring(#self.enemy.deck.cards), Colours.BROWN1, 207, 58, 0, 1, 64, "left")
+                self.render_manager.text_objects["enemy_deck"]:animate({dx=-3})
+            end
+
+        end
+    end
 end
 
 
@@ -429,8 +427,6 @@ function GameScene:update(dt, mx, my, md, mp)
     self:animate_dragging()
     self:animate_dealing()
     self:animate_hovering()
-
-    print(self.player.hand[1], self.player.hand[2], self.player.hand[3])
 end
 
 
