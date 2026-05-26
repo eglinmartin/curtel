@@ -6,6 +6,7 @@ local Deck = require("src.entity.deck")
 local Enemy = require("src.entity.enemy")
 local Entity = require("src.entity.entity")
 local Item = require("src.entity.item")
+local LeTruc = require("src.core.letruc")
 
 local EMPTY = "empty"
 
@@ -16,6 +17,9 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     self.event_manager = EVENT_MANAGER
     self.input_manager = INPUT_MANAGER
     self.entities = {}
+
+    -- Initialize letruc game
+    self.letruc = LeTruc()
 
     -- Create player
     self.player = self.game_state.player
@@ -78,11 +82,9 @@ function GameScene:setup_events()
     -- Shuffle and reset the deck on shuffle command
     self.event_manager:on(
         self.event_manager.events.SHUFFLEDECK, self, function()
-            self.player.deck:reset()
-            self.player.deck:shuffle()
+            self.letruc:shuffle_deck(self.player)
             if self.enemy then
-                self.enemy.deck:reset()
-                self.enemy.deck:shuffle()
+                self.letruc:shuffle_deck(self.enemy)
             end
         end
     )
@@ -91,6 +93,10 @@ function GameScene:setup_events()
     self.event_manager:on(
         self.event_manager.events.DEALCARDS, self, function()
             self.animation_dealing = 0
+            self.letruc:deal_hand(self.player)
+            if self.enemy then
+                self.letruc:deal_hand(self.enemy)
+            end
         end
     )
 
@@ -274,37 +280,31 @@ function GameScene:animate_dealing(dt)
     -- Tick animation timer
     self.animation_dealing = self.animation_dealing + 1
 
-    -- On first frame, reset player's hand
+    -- If first frame:
     if self.animation_dealing == 1 then
-        self:reset_hand(self.player)
+        -- Clear player's entities
+        for i = 1, self.player.hand_size do
+            if self.entities["player_card_" .. i] then
+                self.entities["player_card_" .. i]:clear_sprite()
+                self.entities["player_card_" .. i] = nil
+            end
+        end
+
+        -- Clear enemy's entities
         if self.enemy then
-            self:reset_hand(self.enemy)
+            for i = 1, self.enemy.hand_size do
+                if self.entities["enemy_card_" .. i] then
+                    self.entities["enemy_card_" .. i]:clear_sprite()
+                    self.entities["enemy_card_" .. i] = nil
+                end
+            end
         end
     end
 
-    -- If not first frame, iterate over player hand size
     for i = 1, self.player.hand_size do
         self.card_frame = 1 + (8 * (i-1))
-        if self.animation_dealing == self.card_frame then
+        if self.animation_dealing == self.card_frame then   
 
-            -- Deal a card
-            self.player.hand[i] = self.player.deck:deal_card(i)
-            if self.enemy then
-                self.enemy.hand[i] = self.enemy.deck:deal_card(i)
-            end
-
-            -- If no more cards left after deal, reset and shuffle decks
-            if #self.player.deck.cards == 0 then
-                self.player.deck:reset()
-                self.player.deck:shuffle()
-            end
-            if self.enemy then
-                if #self.enemy.deck.cards == 0 then
-                    self.enemy.deck:reset()
-                    self.enemy.deck:shuffle()
-                end
-            end
-            
             -- Create player card entity on screen and animate
             local player_card = self.player.hand[i]
             self.entities["player_card_" .. i] = Item(
