@@ -20,7 +20,7 @@ rs.setMode(1920, 1080, {fullscreen = true})
 function love.load()
     love.graphics.setDefaultFilter("nearest", "nearest")
     math.randomseed(os.time())
-    love.window.setIcon(love.image.newImageData("assets/icon_128x128.png"))
+    love.window.setIcon(love.image.newImageData("assets/icon_144x144.png"))
     love.mouse.setVisible(false)
     love.window.setTitle("Curtel")
 
