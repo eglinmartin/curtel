@@ -38,6 +38,7 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     -- Set animation timers
     self.animation_hand = 999999
     self.animation_dealing = 999999
+    self.enemy_card_timer = 999999
 end
 
 
@@ -47,6 +48,11 @@ function GameScene:enter()
         entity:clear_sprite()
     end
     self.render_manager:clear_screen()
+
+    -- Reset animation timers
+    self.animation_hand = 999999
+    self.animation_dealing = 999999
+    self.enemy_card_timer = 999999
 
     -- Update player
     self.player:move(74,103)
@@ -94,11 +100,8 @@ function GameScene:setup_events()
         self.event_manager.events.NEWHAND, self, function()
             self.letruc:change_state(self.letruc.states['NEWHAND'])
             self.animation_hand = 0
-            self.letruc:deal_hand(self.player)
-            if self.enemy then
-                self.letruc:deal_hand(self.enemy)
-            end
-            print()
+            self.animation_dealing = 999999
+            self.enemy_card_timer = 999999
         end
     )
 
@@ -111,21 +114,14 @@ function GameScene:setup_events()
     self.event_manager:on(
         self.event_manager.events.DEALCARDS, self, function()
             self.animation_dealing = 0
+            self.enemy_card_timer = 999999
         end
     )
 
-    -- Select card from hand
-    self.event_manager:on(
-        self.event_manager.events.SELECTCARD, self, function()
-            if self.player.selected_card then
-                self.render_manager:create_draw_object_foreground(
-                    "player_card_large", "cards_large_" .. self.player.selected_card.suit,
-                    self.player.selected_card.value, 112.5, 40.5, -5, 1, 125
-                )
-                self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.3})
-            end
-        end
-    )
+    -- self.event_manager:on(
+    --     self.event_manager.events.PLAYTRICK, self, function()
+    --     end
+    -- )
 end
 
 
@@ -253,9 +249,17 @@ function GameScene:animate_new_hand()
             self:reset_hand(self.enemy)
         end
 
+        if self.render_manager.draw_objects_foreground['player_card_large'] then
+            self.render_manager.draw_objects_foreground['player_card_large'] = nil
+        end
+        if self.render_manager.draw_objects_foreground['enemy_card_large'] then
+            self.render_manager.draw_objects_foreground['enemy_card_large'] = nil
+        end
+
+
         self.letruc:start_new_hand()
-        self.render_manager:create_text_object("title_hand", "HAND " .. tostring(self.letruc.num_hands), Colours.YELLOW1, 120, 42, 0, 1, 255, "centre")
-        self.render_manager.text_objects["title_hand"]:animate({dy=3})
+        self.render_manager:create_text_object("status", "HAND " .. tostring(self.letruc.num_hands), Colours.YELLOW1, 120, 42, 0, 1, 255, "centre")
+        self.render_manager.text_objects["status"]:animate({dy=3})
     end
 
     if self.animation_hand == 30 then
@@ -263,8 +267,56 @@ function GameScene:animate_new_hand()
     end
 
     if self.animation_hand == 60 then
-        self.render_manager.text_objects["title_hand"] = nil
+        self.letruc:change_state(self.letruc.states['PLAYTRICK'])
+        self.render_manager:create_text_object("status", "PLAY!", Colours.YELLOW1, 120, 42, 0, 1, 255, "centre")
+        self.render_manager.text_objects["status"]:animate({dy=3})
     end
+
+    if self.animation_hand == 120 then
+        self.render_manager.text_objects["status"] = nil
+    end
+
+    if self.animation_hand == 240 then
+        self.enemy_card_timer = 240 + math.random(0, 120)
+    end
+
+    -- Play enemy card
+    if self.animation_hand == self.enemy_card_timer then
+
+        -- Create list of available enemy cards to play
+        local available_cards = {}
+        for i = 1, self.enemy.hand_size do
+            if self.enemy.hand[i] ~= EMPTY then
+                table.insert(available_cards, {card=self.enemy.hand[i], id=i})
+            end
+        end
+
+        local chosen_card = available_cards[math.random(#available_cards)]
+        self.enemy.selected_card = chosen_card['card']
+        self.letruc:select_card(self.enemy, chosen_card['card'])
+        self.enemy.hand[chosen_card['id']] = EMPTY
+
+        local card_depth = 225
+        if self.render_manager.draw_objects_foreground["player_card_large"] then
+            card_depth = 227
+        end
+
+        self.render_manager:create_draw_object_foreground(
+            "enemy_card_large", "cards_large_" .. self.enemy.selected_card.suit,
+            self.enemy.selected_card.value, 127.5, 50.5, 5, 1, card_depth
+        )
+
+        local hand_card = self.render_manager.draw_objects_foreground["enemy_card_" .. chosen_card['id']]
+        local large_card = self.render_manager.draw_objects_foreground["enemy_card_large"]
+
+        local dx = hand_card.x - large_card.x
+        local dy = hand_card.y - large_card.y
+        local drot = -5
+
+        self.render_manager.draw_objects_foreground["enemy_card_large"]:animate({dx=dx, dy=dy, drot=drot, dscale=-0.5})
+        self.render_manager.draw_objects_foreground["enemy_card_" .. chosen_card['id']] = nil
+    end
+    
 end
 
 
@@ -375,8 +427,10 @@ function GameScene:animate_hovering(dt)
             self.hovered_entity = entity  -- store current hovered entity
 
             if not entity.dragging then
-                if self.render_manager.draw_objects_foreground[entity.id] then
-                    self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
+                if self.letruc.game_state == self.letruc.states['PLAYTRICK'] then
+                    if self.render_manager.draw_objects_foreground[entity.id] then
+                        self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
+                    end
                 end
 
                 -- Trigger if hover just started OR if we switched to a different entity
@@ -417,13 +471,25 @@ function GameScene:animate_dragging(dt)
 
     for _, entity in pairs(self.entities) do
         if entity.dragging then
-            entity:drag()
-            self.player.selected_card = entity.item
+            if self.letruc.game_state == self.letruc.states['PLAYTRICK'] then
+                entity:drag()
+                self.player.selected_card = entity.item
+            end
         end
 
         if entity.released and entity.id:find("player_card_") then
             if math.abs(self.input_manager.mx - 120) <= 16 and math.abs(self.input_manager.my - 52.5) <= 32 then
-                self.event_manager:trigger(self.event_manager.events.SELECTCARD)
+                
+                -- Select card
+                if self.player.selected_card then
+                    self.render_manager:create_draw_object_foreground(
+                        "player_card_large", "cards_large_" .. self.player.selected_card.suit,
+                        self.player.selected_card.value, 112.5, 40.5, -5, 1, 226
+                    )
+                    self.letruc:select_card(self.player, self.player.selected_card)
+                    self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.3})
+                end
+
                 entity:clear_sprite()
                 self.entities[entity.id] = nil
                 self.player.hand[tonumber(entity.id:match("%d+"))] = EMPTY

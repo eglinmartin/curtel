@@ -32,7 +32,7 @@ function DrawObject:animate(args)
     if args.dx then self.dx = args.dx end
     if args.dy then self.dy = args.dy end
     if args.dscale then self.dscale = args.dscale end
-    if args.drot then self.drot = args.drot end
+    if args.drot then self.drot = math.rad(args.drot) end
 end
 
 
@@ -42,6 +42,7 @@ function DrawObject:update(dt)
     self.dx = self:return_to_xy(self.dx, dt)
     self.dy = self:return_to_xy(self.dy, dt)
     self.dscale = self:return_to_scale(dt)
+    self.drot = self:return_to_rot(dt)
 end
 
 
@@ -66,6 +67,18 @@ function DrawObject:return_to_scale(dt)
     end
 
     return self.dscale
+end
+
+
+function DrawObject:return_to_rot(dt)
+    local decay = 16
+    self.drot = self.drot * math.exp(-decay * dt)
+
+    if math.abs(self.drot) < 0.001 then
+        return 0
+    end
+
+    return self.drot
 end
 
 

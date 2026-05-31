@@ -42,17 +42,19 @@ function LeTruc:change_state(state)
         self:start_new_game()
     
     elseif self.game_state == GameStates.NEWHAND then
+        self:deal_hand(self.player1)
+        self:deal_hand(self.player2)
     end
         
     print("STATE: " .. self.game_state)
-    
 end
 
 
-function LeTruc:start_new_game(player1, player2)
+function LeTruc:start_new_game()
     -- Reset decks, shuffle cards, set scores to zero
-    self.game_scores = {PLAYER1 = 0, PLAYER2 = 0}
-    self.hand_scores = {PLAYER1 = 0, PLAYER2 = 0}
+    self.game_scores = {[Players.PLAYER1] = 0, [Players.PLAYER2] = 0}
+    self.hand_scores = {[Players.PLAYER1] = 0, [Players.PLAYER2] = 0}
+    self.played_cards = {[Players.PLAYER1] = EMPTY, [Players.PLAYER2] = EMPTY}
     self.num_hands = 0
     self.winner = nil
 
@@ -85,7 +87,6 @@ function LeTruc:shuffle_deck(player)
 end
 
 
-
 function LeTruc:deal_hand(player)
     for i = 1, player.hand_size do
         -- If no cards left to deal, reset and shuffle decks
@@ -109,8 +110,12 @@ function LeTruc:start_new_trick()
 end
 
 
-function LeTruc:select_card(player)
-    -- Select card for a given player
+function LeTruc:select_card(player, card)
+    if player.id == 'player' then
+        self.played_cards[Players.PLAYER1] = card
+    elseif player.id == 'enemy' then
+        self.played_cards[Players.PLAYER2] = card
+    end
 end
 
 
