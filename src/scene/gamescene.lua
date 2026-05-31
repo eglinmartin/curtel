@@ -18,12 +18,12 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     self.input_manager = INPUT_MANAGER
     self.entities = {}
 
-    -- Initialize letruc game
-    self.letruc = LeTruc()
-
     -- Create player
     self.player = self.game_state.player
     self.entities["player"] = self.player
+
+    -- Initialize letruc game
+    self.letruc = LeTruc(self.event_manager)
 
     -- Create pointer
     self.pointer = Entity("pointer", GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
@@ -36,7 +36,8 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     self.hovering = false
 
     -- Set animation timers
-    self.animation_dealing = 0
+    self.animation_hand = 999999
+    self.animation_dealing = 999999
 end
 
 
@@ -54,13 +55,15 @@ function GameScene:enter()
 
     -- Create placeholder nil enemy object
     self.enemy = nil
+    self:create_enemy()
+
+    -- Start new game of letruc
+    self.letruc.player1 = self.player
+    self.letruc.player2 = self.enemy
+    self.letruc:change_state(self.letruc.states.NEWGAME)
 
     -- Set up event handling
     self:setup_events()
-
-    -- Shuffle and deal cards
-    self.event_manager:trigger(self.event_manager.events.SHUFFLEDECK)
-    self.event_manager:trigger(self.event_manager.events.DEALCARDS)
 
     self.pointer:create_sprite()
 
@@ -72,6 +75,7 @@ function GameScene:enter()
     self.enemy_cards_xy = {}
 
     self:create_hud(self.player)
+    self:create_hud(self.enemy)
 
     self:animate_enter()
 
@@ -79,32 +83,34 @@ end
 
 
 function GameScene:setup_events()
-    -- Shuffle and reset the deck on shuffle command
+    -- Deal cards to the player on deal cards command
     self.event_manager:on(
-        self.event_manager.events.SHUFFLEDECK, self, function()
-            self.letruc:shuffle_deck(self.player)
-            if self.enemy then
-                self.letruc:shuffle_deck(self.enemy)
-            end
+        self.event_manager.events.NEWGAME, self, function()
+            self.letruc:change_state(self.letruc.states['NEWGAME'])
         end
     )
 
-    -- Deal cards to the player on deal cards command
     self.event_manager:on(
-        self.event_manager.events.DEALCARDS, self, function()
-            self.animation_dealing = 0
+        self.event_manager.events.NEWHAND, self, function()
+            self.letruc:change_state(self.letruc.states['NEWHAND'])
+            self.animation_hand = 0
             self.letruc:deal_hand(self.player)
             if self.enemy then
                 self.letruc:deal_hand(self.enemy)
             end
+            print()
         end
     )
 
-    -- Create enemy
     self.event_manager:on(
-        self.event_manager.events.CREATEENEMY, self, function()
-            self:create_enemy()
-            self:create_hud(self.enemy)
+        self.event_manager.events.NEWTRICK, self, function()
+            self.letruc:change_state(self.letruc.states['NEWTRICK'])
+        end
+    )
+
+    self.event_manager:on(
+        self.event_manager.events.DEALCARDS, self, function()
+            self.animation_dealing = 0
         end
     )
 
@@ -120,22 +126,6 @@ function GameScene:setup_events()
             end
         end
     )
-
-    -- Select card from hand
-    self.event_manager:on(
-        self.event_manager.events.DESELECTCARD, self, function()
-            self.player.selected_card = nil
-            if self.render_manager.draw_objects_foreground["player_card_large"] then
-                self.render_manager:remove_draw_object_foreground("player_card_large")
-            end
-        end
-    )
-
-    -- Mouse press event
-    self.event_manager:on(
-        self.event_manager.events.MOUSEPRESSED, self, function()
-        end
-    )
 end
 
 
@@ -147,7 +137,9 @@ function GameScene:create_enemy()
     self.enemy:create_sprite()
     self.enemy:animate({dy=4})
     self.enemy.deck = Deck()
+    self.enemy.hand = {EMPTY, EMPTY, EMPTY}
     self.entities['enemy'] = self.enemy
+    self.letruc.enemy = self.enemy
 end
 
 
@@ -252,10 +244,33 @@ function GameScene:animate_enter()
 end
 
 
+function GameScene:animate_new_hand()
+    self.animation_hand = self.animation_hand + 1
+
+    if self.animation_hand == 1 then
+        self:reset_hand(self.player)
+        if self.enemy then
+            self:reset_hand(self.enemy)
+        end
+
+        self.letruc:start_new_hand()
+        self.render_manager:create_text_object("title_hand", "HAND " .. tostring(self.letruc.num_hands), Colours.YELLOW1, 120, 42, 0, 1, 255, "centre")
+        self.render_manager.text_objects["title_hand"]:animate({dy=3})
+    end
+
+    if self.animation_hand == 30 then
+        self.animation_dealing = 0
+    end
+
+    if self.animation_hand == 60 then
+        self.render_manager.text_objects["title_hand"] = nil
+    end
+end
+
+
 function GameScene:reset_hand(character)
     if character == self.player then
         for i = 1, self.player.hand_size do
-            self.player.hand[i] = EMPTY
             if self.entities["player_card_" .. i] then
                 self.entities["player_card_" .. i]:clear_sprite()
                 self.entities["player_card_" .. i] = nil
@@ -264,7 +279,6 @@ function GameScene:reset_hand(character)
 
     elseif character == self.enemy then
         for i = 1, self.enemy.hand_size do
-            self.enemy.hand[i] = EMPTY
             if self.enemy then
                 if self.entities["enemy_card_" .. i] then
                     self.entities["enemy_card_" .. i]:clear_sprite()
@@ -307,23 +321,27 @@ function GameScene:animate_dealing(dt)
 
             -- Create player card entity on screen and animate
             local player_card = self.player.hand[i]
-            self.entities["player_card_" .. i] = Item(
-                "player_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                x=self.player_cards_xy[i][1], y=self.player_cards_xy[i][2], w=15, h=19, s=1, r=0,
-                sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i],
-                draggable=true, hoverable=true
-            })
-            self.entities["player_card_" .. i]:animate({dx=-3-(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
+            if player_card ~= EMPTY then
+                self.entities["player_card_" .. i] = Item(
+                    "player_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                    x=self.player_cards_xy[i][1], y=self.player_cards_xy[i][2], w=15, h=19, s=1, r=0,
+                    sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i],
+                    draggable=true, hoverable=true
+                })
+                self.entities["player_card_" .. i]:animate({dx=-3-(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
+            end
 
             -- Create enemy card entity on screen and animate
             if self.enemy then
                 local enemy_card = self.enemy.hand[i]
-                self.entities["enemy_card_" .. i] = Item(
-                    "enemy_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                    x=self.enemy_cards_xy[i][1], y=self.enemy_cards_xy[i][2], w=15, h=19, s=1, r=0,
-                    sprite_sheet="cards_" .. enemy_card.suit, sprite_tag=enemy_card.value, depth=128+i, item=self.enemy.hand[i]
-                })
-                self.entities["enemy_card_" .. i]:animate({dx=3+(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
+                if enemy_card ~= EMPTY then
+                    self.entities["enemy_card_" .. i] = Item(
+                        "enemy_card_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                        x=self.enemy_cards_xy[i][1], y=self.enemy_cards_xy[i][2], w=15, h=19, s=1, r=0,
+                        sprite_sheet="cards_" .. enemy_card.suit, sprite_tag=enemy_card.value, depth=128+i, item=self.enemy.hand[i]
+                    })
+                    self.entities["enemy_card_" .. i]:animate({dx=3+(14.5*(i-1)), dy=-44-(3*(i-1)), dscale=-0.5})
+                end
             end
 
             -- Animate deck icons and numbers
@@ -423,10 +441,12 @@ function GameScene:update(dt, mx, my, md, mp)
     -- Move cursor back to neutral, off-screen position
     self.pointer:move(-50, -50)
 
-    -- Perform animations
     self:animate_dragging()
-    self:animate_dealing()
     self:animate_hovering()
+    
+    -- Perform animations
+    self:animate_new_hand()
+    self:animate_dealing()
 end
 
 

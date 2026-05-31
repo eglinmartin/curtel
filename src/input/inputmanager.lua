@@ -9,9 +9,12 @@ function InputManager:init(EVENT_MANAGER, rs)
     self.keybinds = {
         ["f1"] = self.event_manager.events.SWITCHSCREEN_GAME,
         ["f2"] = self.event_manager.events.SWITCHSCREEN_SHOP,
-        ["1"] = self.event_manager.events.DEALCARDS,
-        ["2"] = self.event_manager.events.CREATEENEMY,
-        ["f11"] = self.event_manager.events.TOGGLE_FULLSCREEN
+        ["f11"] = self.event_manager.events.TOGGLE_FULLSCREEN,
+
+        ["1"] = self.event_manager.events.NEWGAME,
+        ["2"] = self.event_manager.events.NEWHAND,
+        ["3"] = self.event_manager.events.NEWTRICK,
+        
     }
     self.rs = rs
 

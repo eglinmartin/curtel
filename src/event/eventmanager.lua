@@ -8,14 +8,19 @@ local Events = {
     SWITCHSCREEN_GAME = 'switch screen to game',
     SWITCHSCREEN_SHOP = 'switch screen to shop',
     SHUFFLEDECK = 'reset card deck',
-    DEALCARDS = 'deal cards to player',
     SELECTCARD = 'select card from hand',
     DESELECTCARD = 'deselect the selected card',
     SWITCHSTOCK_LEFT = 'switch stock (left)',
     SWITCHSTOCK_RIGHT = 'switch stock (right)',
     TOGGLE_FULLSCREEN = 'toggle fullscreen',
     MOUSEPRESSED = 'mouse pressed',
-    CREATEENEMY = 'create enemy'
+    CREATEENEMY = 'create enemy',
+
+    NEWGAME = 'new game',
+    NEWHAND = 'new hand',
+    NEWTRICK = 'new trick',
+
+    DEALCARDS = 'deal cards to player',
 }
 
 

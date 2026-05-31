@@ -1,6 +1,8 @@
 local Class = require("lib.class")
 local LeTruc = Class{}
 
+local EMPTY = "empty"
+
 
 local Players = {
     PLAYER1 = "Player 1",
@@ -8,27 +10,54 @@ local Players = {
 }
 
 
-function LeTruc:init()
+local GameStates = {
+    NEWGAME = "Start new game",
+    NEWHAND = "Start new hand",
+    NEWTRICK = "Start new trick",
+    DEALCARDS = "Deal cards",
+    PLAYTRICK = "Play trick",
+    COMPARECARDS = "Compare cards",
+    RESOLVETRICK = "Resolve trick",
+    GUNFIGHT = "Gunfight",
+}
+
+
+function LeTruc:init(event_manager)
     -- Initialize variables and begin game
-    self.game_scores = {PLAYER1 = nil, PLAYER2 = nil}
-    self.hand_scores = {PLAYER1 = nil, PLAYER2 = nil}
-    self.winner = nil
-    self:start_new_game()
+    self.states = GameStates
+    self.game_state = ''
+    self.event_manager = event_manager
+
+    -- Initialize players
+    self.player1 = nil
+    self.player2 = nil
 end
 
 
-function LeTruc:start_new_game()
-    -- Reset decks, shuffle cards, set scores to zero
-    print("New game started")
+function LeTruc:change_state(state)
+    self.game_state = state
 
-    -- Reset scores and check
+    -- Start a new game
+    if self.game_state == GameStates.NEWGAME then
+        self:start_new_game()
+    
+    elseif self.game_state == GameStates.NEWHAND then
+    end
+        
+    print("STATE: " .. self.game_state)
+    
+end
+
+
+function LeTruc:start_new_game(player1, player2)
+    -- Reset decks, shuffle cards, set scores to zero
     self.game_scores = {PLAYER1 = 0, PLAYER2 = 0}
     self.hand_scores = {PLAYER1 = 0, PLAYER2 = 0}
-end
+    self.num_hands = 0
+    self.winner = nil
 
-
-function LeTruc:reset_cards()
-    self.cards = {PLAYER1 = nil, PLAYER2 = nil}
+    self:shuffle_deck(self.player1)
+    self:shuffle_deck(self.player2)
 end
 
 
@@ -46,7 +75,7 @@ end
 
 function LeTruc:start_new_hand()
     -- Deal cards, start new trick
-    print("New hand started")
+    self.num_hands = self.num_hands + 1
 end
 
 
@@ -54,6 +83,7 @@ function LeTruc:shuffle_deck(player)
     player.deck:reset()
     player.deck:shuffle()
 end
+
 
 
 function LeTruc:deal_hand(player)
