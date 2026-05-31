@@ -22,6 +22,7 @@ function love.load()
     math.randomseed(os.time())
     love.window.setIcon(love.image.newImageData("assets/icon_128x128.png"))
     love.mouse.setVisible(false)
+    love.window.setTitle("Curtel")
 
     -- Initialize game constants
     GAME_CONTEXT = GameContext()
