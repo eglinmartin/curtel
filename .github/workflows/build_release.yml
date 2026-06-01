@@ -46,7 +46,7 @@ jobs:
         - name: Create icon
           run: |
             mkdir -p ./MyIcon.iconset
-            cp ./assets/icon_128x128.png ./MyIcon.iconset/icon_144x144.png
+            cp ./assets/icon_144x144.png ./MyIcon.iconset/icon_144x144.png
             iconutil -c icns ./MyIcon.iconset -o ./icon.icns
             
         - name: Package .love file
