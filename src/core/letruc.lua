@@ -31,6 +31,7 @@ function LeTruc:init(event_manager)
     -- Initialize players
     self.player1 = nil
     self.player2 = nil
+    
 end
 
 
@@ -42,10 +43,14 @@ function LeTruc:change_state(state)
         self:start_new_game()
     
     elseif self.game_state == GameStates.NEWHAND then
+        self:start_new_hand()
         self:deal_hand(self.player1)
         self:deal_hand(self.player2)
-    end
-        
+
+    elseif self.game_state == GameStates.NEWTRICK then
+        self:start_new_trick()
+
+    end 
     print("STATE: " .. self.game_state)
 end
 
@@ -78,6 +83,7 @@ end
 function LeTruc:start_new_hand()
     -- Deal cards, start new trick
     self.num_hands = self.num_hands + 1
+    self.hand_scores = {[Players.PLAYER1] = 0, [Players.PLAYER2] = 0}
 end
 
 
@@ -107,6 +113,7 @@ end
 function LeTruc:start_new_trick()
     -- Begin a new trick - reset comparisons and trick variables
     print("New trick started")
+    self:change_state(GameStates.PLAYTRICK)
 end
 
 

@@ -36,9 +36,7 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     self.hovering = false
 
     -- Set animation timers
-    self.animation_hand = 999999
-    self.animation_dealing = 999999
-    self.enemy_card_timer = 999999
+    self:reset_animations()
 end
 
 
@@ -50,9 +48,7 @@ function GameScene:enter()
     self.render_manager:clear_screen()
 
     -- Reset animation timers
-    self.animation_hand = 999999
-    self.animation_dealing = 999999
-    self.enemy_card_timer = 999999
+    self:reset_animations()
 
     -- Update player
     self.player:move(74,103)
@@ -88,6 +84,16 @@ function GameScene:enter()
 end
 
 
+function GameScene:reset_animations()
+    -- Auto-generate a timer for each letruc game state
+    for key, _ in pairs(self.letruc.states) do
+        self["animation_" .. key:lower()] = 999999
+    end
+    self.enemy_card_timer = 999999
+    self.both_cards_timer = 999999
+end
+
+
 function GameScene:setup_events()
     -- Deal cards to the player on deal cards command
     self.event_manager:on(
@@ -99,8 +105,8 @@ function GameScene:setup_events()
     self.event_manager:on(
         self.event_manager.events.NEWHAND, self, function()
             self.letruc:change_state(self.letruc.states['NEWHAND'])
-            self.animation_hand = 0
-            self.animation_dealing = 999999
+            self.animation_newhand = 0
+            self.animation_dealcards = 999999
             self.enemy_card_timer = 999999
         end
     )
@@ -113,7 +119,7 @@ function GameScene:setup_events()
 
     self.event_manager:on(
         self.event_manager.events.DEALCARDS, self, function()
-            self.animation_dealing = 0
+            self.animation_dealcards = 0
             self.enemy_card_timer = 999999
         end
     )
@@ -241,9 +247,9 @@ end
 
 
 function GameScene:animate_new_hand()
-    self.animation_hand = self.animation_hand + 1
+    self.animation_newhand = self.animation_newhand + 1
 
-    if self.animation_hand == 1 then
+    if self.animation_newhand == 1 then
         self:reset_hand(self.player)
         if self.enemy then
             self:reset_hand(self.enemy)
@@ -257,31 +263,30 @@ function GameScene:animate_new_hand()
         end
 
 
-        self.letruc:start_new_hand()
         self.render_manager:create_text_object("status", "HAND " .. tostring(self.letruc.num_hands), Colours.YELLOW1, 120, 42, 0, 1, 255, "centre")
         self.render_manager.text_objects["status"]:animate({dy=3})
     end
 
-    if self.animation_hand == 30 then
-        self.animation_dealing = 0
+    if self.animation_newhand == 30 then
+        self.animation_dealcards = 0
     end
 
-    if self.animation_hand == 60 then
-        self.letruc:change_state(self.letruc.states['PLAYTRICK'])
+    if self.animation_newhand == 60 then
+        self.letruc:change_state(self.letruc.states['NEWTRICK'])
         self.render_manager:create_text_object("status", "PLAY!", Colours.YELLOW1, 120, 42, 0, 1, 255, "centre")
         self.render_manager.text_objects["status"]:animate({dy=3})
     end
 
-    if self.animation_hand == 120 then
+    if self.animation_newhand == 120 then
         self.render_manager.text_objects["status"] = nil
     end
 
-    if self.animation_hand == 240 then
+    if self.animation_newhand == 240 then
         self.enemy_card_timer = 240 + math.random(0, 120)
     end
 
     -- Play enemy card
-    if self.animation_hand == self.enemy_card_timer then
+    if self.animation_newhand == self.enemy_card_timer then
 
         -- Create list of available enemy cards to play
         local available_cards = {}
@@ -317,6 +322,9 @@ function GameScene:animate_new_hand()
         self.render_manager.draw_objects_foreground["enemy_card_" .. chosen_card['id']] = nil
     end
     
+    if self.enemy.selected_card and self.player.selected_card and self.letruc.game_state == self.letruc.states.PLAYTRICK then
+        self.letruc:change_state(self.letruc.states.COMPARECARDS)
+    end
 end
 
 
@@ -344,10 +352,10 @@ end
 
 function GameScene:animate_dealing(dt)
     -- Tick animation timer
-    self.animation_dealing = self.animation_dealing + 1
+    self.animation_dealcards = self.animation_dealcards + 1
 
     -- If first frame:
-    if self.animation_dealing == 1 then
+    if self.animation_dealcards == 1 then
         -- Clear player's entities
         for i = 1, self.player.hand_size do
             if self.entities["player_card_" .. i] then
@@ -369,7 +377,7 @@ function GameScene:animate_dealing(dt)
 
     for i = 1, self.player.hand_size do
         self.card_frame = 1 + (8 * (i-1))
-        if self.animation_dealing == self.card_frame then   
+        if self.animation_dealcards == self.card_frame then   
 
             -- Create player card entity on screen and animate
             local player_card = self.player.hand[i]
