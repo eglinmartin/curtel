@@ -275,18 +275,26 @@ function GameScene:animate_new_hand()
         self.letruc:change_state(self.letruc.states['NEWTRICK'])
         self.render_manager:create_text_object("status", "PLAY!", Colours.YELLOW1, 120, 42, 0, 1, 255, "centre")
         self.render_manager.text_objects["status"]:animate({dy=3})
+        self.animation_newtrick = 0
     end
 
     if self.animation_newhand == 120 then
         self.render_manager.text_objects["status"] = nil
     end
+end
 
-    if self.animation_newhand == 240 then
-        self.enemy_card_timer = 240 + math.random(0, 120)
+
+function GameScene:animate_new_trick()
+    self.animation_newtrick = self.animation_newtrick + 1
+
+    if self.animation_newtrick == 1 then
+        self.enemy_card_timer = math.random(30, 120)
+        self.player.selected_card = nil
+        self.enemy.selected_card = nil
     end
 
     -- Play enemy card
-    if self.animation_newhand == self.enemy_card_timer then
+    if self.animation_newtrick == self.enemy_card_timer then
 
         -- Create list of available enemy cards to play
         local available_cards = {}
@@ -324,6 +332,35 @@ function GameScene:animate_new_hand()
     
     if self.enemy.selected_card and self.player.selected_card and self.letruc.game_state == self.letruc.states.PLAYTRICK then
         self.letruc:change_state(self.letruc.states.COMPARECARDS)
+        self.animation_comparecards = 0
+    end
+end
+
+
+function GameScene:animate_card_compare()
+    self.animation_comparecards = self.animation_comparecards + 1
+
+    if self.animation_comparecards == 121 then
+        local player_card = self.render_manager.draw_objects_foreground['player_card_large']
+        local player_card_current_pos = {x=player_card.x, y=player_card.y, rot=player_card.rot}
+        player_card:move(79, 56)
+        player_card:rotate(0, 0)
+        player_card:animate({
+            dx=player_card_current_pos.x - player_card.x,
+            dy=player_card_current_pos.y - player_card.y,
+            drot=-5
+        })
+
+        local enemy_card = self.render_manager.draw_objects_foreground['enemy_card_large']
+        local enemy_card_current_pos = {x=enemy_card.x, y=enemy_card.y, rot=enemy_card.rot}
+        enemy_card:move(160, 56)
+        enemy_card:rotate(0, 0)
+        enemy_card:animate({
+            dx=enemy_card_current_pos.x - enemy_card.x,
+            dy=enemy_card_current_pos.y - enemy_card.y,
+            drot=5
+        })
+
     end
 end
 
@@ -481,7 +518,7 @@ function GameScene:animate_dragging(dt)
         if entity.dragging then
             if self.letruc.game_state == self.letruc.states['PLAYTRICK'] then
                 entity:drag()
-                self.player.selected_card = entity.item
+                self.player.picked_card = entity.item
             end
         end
 
@@ -489,13 +526,15 @@ function GameScene:animate_dragging(dt)
             if math.abs(self.input_manager.mx - 120) <= 16 and math.abs(self.input_manager.my - 52.5) <= 32 then
                 
                 -- Select card
-                if self.player.selected_card then
+                if self.player.picked_card then
                     self.render_manager:create_draw_object_foreground(
-                        "player_card_large", "cards_large_" .. self.player.selected_card.suit,
-                        self.player.selected_card.value, 112.5, 40.5, -5, 1, 226
+                        "player_card_large", "cards_large_" .. self.player.picked_card.suit,
+                        self.player.picked_card.value, 112.5, 40.5, -5, 1, 226
                     )
-                    self.letruc:select_card(self.player, self.player.selected_card)
+                    self.letruc:select_card(self.player, self.player.picked_card)
+                    self.player.selected_card = self.player.picked_card
                     self.render_manager.draw_objects_foreground["player_card_large"]:animate({dscale=0.3})
+                    self.player.picked_card = nil
                 end
 
                 entity:clear_sprite()
@@ -520,7 +559,9 @@ function GameScene:update(dt, mx, my, md, mp)
     
     -- Perform animations
     self:animate_new_hand()
+    self:animate_new_trick()
     self:animate_dealing()
+    self:animate_card_compare()
 end
 
 

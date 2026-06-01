@@ -28,6 +28,11 @@ function DrawObject:move(x, y)
 end
 
 
+function DrawObject:rotate(rot)
+    self.rot = rot * (math.pi / 180)
+end
+
+
 function DrawObject:animate(args)
     if args.dx then self.dx = args.dx end
     if args.dy then self.dy = args.dy end
