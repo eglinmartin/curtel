@@ -117,6 +117,13 @@ end
 
 function LeTruc:compare_cards()
     -- Compare between two cards to decide who wins the trick
+    if self.played_cards[Players.PLAYER1].effect > self.played_cards[Players.PLAYER2].effect then
+        return self.player1
+    elseif self.played_cards[Players.PLAYER1].effect < self.played_cards[Players.PLAYER2].effect then
+        return self.player2
+    else
+        return nil
+    end
 end
 
 

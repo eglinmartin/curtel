@@ -1,4 +1,5 @@
 local Class = require("lib.class")
+local peachy = require("lib.peachy")
 
 local DrawObject = Class{}
 
@@ -30,6 +31,15 @@ end
 
 function DrawObject:rotate(rot)
     self.rot = rot * (math.pi / 180)
+end
+
+
+function DrawObject:change_sprite(sprite_name, sprite_tag)
+    self.sprite = peachy.new(
+        "bin/json/" .. sprite_name .. ".json",
+        love.graphics.newImage("bin/sprites/" .. sprite_name .. ".png"),
+        sprite_tag
+    )
 end
 
 

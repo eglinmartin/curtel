@@ -165,6 +165,19 @@ function GameScene:draw_bullet(name, i, x, y, bullet)
 end
 
 
+function GameScene:clear_bullets(character)
+    local name = "player"
+    if character == self.enemy then
+        name = "enemy"
+    end
+
+    for i, bullet in pairs(character.bullets) do
+        self.entities[name .. "_bullet_icon_" .. i]:clear_sprite()
+        self.entities[name .. "_bullet_icon_" .. i] = nil
+    end
+end
+
+
 function GameScene:start_new_game()
     self.letruc:start_new_game(self.player, self.enemy)
 
@@ -315,6 +328,26 @@ function GameScene:play_card(character)
     if self.player.selected_card and self.enemy.selected_card then
         self:compare_cards()
     end
+end
+
+
+function GameScene:compare_cards()
+    local winner = self.letruc:compare_cards()
+
+    local animation_steps = {
+        {delay=1, action= function () self:clear_bullets(self.player) end},
+        {delay=0, action= function () self:clear_bullets(self.enemy) end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.5, {x=80, y=60, rot=0}):ease("expoout") end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.5, {x=159, y=60, rot=0}):ease("expoout") end},
+        {delay=0, action= function () self.render_manager.draw_objects_foreground["enemy_card_large"].covered = false end},
+        {delay=0, action= function () self.render_manager.draw_objects_foreground["enemy_card_large"]:change_sprite("cards_large_" .. self.enemy.selected_card.suit, self.enemy.selected_card.value) end},
+        {delay=1, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.1, {x=105}):ease("linear") end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.1, {x=134}):ease("linear") end},
+        {delay=0.1, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.5, {x=80}):ease("expoout") end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.5, {x=159}):ease("expoout") end},
+        {delay=1, action= function () print() end},
+    }
+    self:start_animation("compare_cards", animation_steps)
 end
 
 

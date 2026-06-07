@@ -21,7 +21,6 @@ function Item:update(dt, mx, my, mouse_down, mouse_pressed)
         self.sprite_tag = "back1"
     end
     Entity.update(self, dt, mx, my, mouse_down, mouse_pressed)
-    
 end
 
 
