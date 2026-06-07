@@ -252,6 +252,9 @@ function GameScene:deal_card(character, player_card, i, name, cards_xy)
             sprite_sheet="cards_" .. player_card.suit, sprite_tag=player_card.value, depth=128+i, item=self.player.hand[i],
             draggable=card_interact, hoverable=card_interact
         })
+        if character == self.enemy then
+            self.entities[name .. "_card_" .. i].covered = true
+        end
         flux.to(self.entities[name .. "_card_" .. i], 0.5, {x=cards_xy[1], y=cards_xy[2], scale=1}):ease("expoout")
         
         self.render_manager.text_objects[name .. "_deck"].x = text_x - (4 * text_dir)
@@ -265,9 +268,17 @@ end
 
 function GameScene:play_card(character)
     local card_params = {x=112.5, y=40.5, rot=-5, depth=226}
+    local card_suit = "general"
+    local card_value = "back1"
+
+    if character == self.player then
+        card_suit = character.picked_card.suit
+        card_value = character.picked_card.value
+    end
 
     if character == self.enemy then
         card_params = {x=127.5, y=50.5, rot=5, depth=225}
+
         if self.render_manager.draw_objects_foreground['player_card_large'] then
             card_params.depth = 227
         end
@@ -293,13 +304,17 @@ function GameScene:play_card(character)
     end
 
     self.render_manager:create_draw_object_foreground(
-        character.id .. "_card_large", "cards_large_" .. character.picked_card.suit,
-        character.picked_card.value, card_params.x, card_params.y, card_params.rot, 1.2, card_params.depth
+        character.id .. "_card_large", "cards_large_" .. card_suit,
+        card_value, card_params.x, card_params.y, card_params.rot, 1.2, card_params.depth
     )
     flux.to(self.render_manager.draw_objects_foreground[character.id .. "_card_large"], 0.5, {scale=1}):ease("expoout")
     self.letruc:select_card(character, character.picked_card)
     character.selected_card = character.picked_card
     character.picked_card = nil
+
+    if self.player.selected_card and self.enemy.selected_card then
+        self:compare_cards()
+    end
 end
 
 

@@ -16,7 +16,12 @@ end
 
 
 function Item:update(dt, mx, my, mouse_down, mouse_pressed)
+    if self.covered then
+        self.sprite_sheet = "cards_general"
+        self.sprite_tag = "back1"
+    end
     Entity.update(self, dt, mx, my, mouse_down, mouse_pressed)
+    
 end
 
 
