@@ -58,12 +58,6 @@ function GameScene:enter()
     self.letruc.player1 = self.player
     self.letruc.player2 = self.enemy
     
-    self:draw_hud(self.player)
-    self:draw_hud(self.enemy)
-
-    self:draw_bullets(self.player)
-    self:draw_bullets(self.enemy)
-
     -- Set up event handling
     -- self:setup_events()
 
@@ -88,6 +82,34 @@ function GameScene:draw_hud(character)
         sprite = "enemy1"
     end
 
+
+    local animation_steps = {
+        {delay=0, action= function () self.render_manager:create_draw_object_foreground("hud_" .. name .. "_head", sprite, "head", x_coords[1], 25, 0, 1, 128) end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["hud_" .. name .. "_head"], 1, {y=23}):ease("elasticout") end},
+
+        {delay=0, action= function () self.render_manager:create_text_object(name .. "_name", "PLAYER", Colours.YELLOW1, x_coords[2], 22, 0, 1, 64, text_dir) end},
+        {delay=0, action= function () flux.to(self.render_manager.text_objects[name .. "_name"], 1, {y=20}):ease("elasticout") end},
+
+        {delay=0.1, action= function () self.render_manager:create_draw_object_foreground("hud_" .. name .. "_health", "icons", "heart", x_coords[3], 40.5, 0, 1, 128) end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["hud_" .. name .. "_health"], 1, {y=38.5}):ease("elasticout") end},
+        
+        {delay=0, action= function () self.render_manager:create_text_object(name .. "_health", tostring(character.health), Colours.RED1, x_coords[4], 38, 0, 1, 64, text_dir) end},
+        {delay=0, action= function () flux.to(self.render_manager.text_objects[name .. "_health"], 1, {y=36}):ease("elasticout") end},
+
+        {delay=0.1, action= function () self.render_manager:create_draw_object_foreground("hud_" .. name .. "_money", "icons", "money", x_coords[3], 51.5, 0, 1, 128) end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["hud_" .. name .. "_money"], 1, {y=49.5}):ease("elasticout") end},
+        
+        {delay=0, action= function () self.render_manager:create_text_object(name .. "_money", "$" .. tostring(character.money), Colours.YELLOW1, x_coords[4], 49, 0, 1, 64, text_dir) end},
+        {delay=0, action= function () flux.to(self.render_manager.text_objects[name .. "_money"], 1, {y=47}):ease("elasticout") end},
+
+        {delay=0.1, action= function ()self.render_manager:create_draw_object_foreground("hud_" .. name .. "_deck", "icons", "cards", x_coords[3] , 62.5, 0, 1, 140) end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["hud_" .. name .. "_deck"], 1, {y=60.5}):ease("elasticout") end},
+        
+        {delay=0, action= function () self.render_manager:create_text_object(name .. "_deck", tostring(#character.deck.cards), Colours.BROWN1, x_coords[4], 60, 0, 1, 64, text_dir) end},
+        {delay=0, action= function () flux.to(self.render_manager.text_objects[name .. "_deck"], 1, {y=58}):ease("elasticout") end},
+    }
+
+
     -- Draw card markers
     for i = 1, character.hand_size do
         local x = (11.5 + ( 10 * i))
@@ -100,22 +122,12 @@ function GameScene:draw_hud(character)
             name = "enemy"
         end
         
-        self.render_manager:create_draw_object_foreground(
-            name .. "_card_empty_" .. i, "cards_general", "empty", cards_xy[1], cards_xy[2], 0, 1, 128
-        )
+        table.insert(animation_steps, {delay=0.1, action= function() self.render_manager:create_draw_object_foreground(name .. "_card_empty_" .. i, "cards_general", "empty", cards_xy[1], cards_xy[2]+2, 0, 1, 128) end})
+        table.insert(animation_steps, {delay=0, action= function() flux.to(self.render_manager.draw_objects_foreground[name .. "_card_empty_" .. i], 1, {y=cards_xy[2]}):ease("elasticout") end})
     end
+    
+    self:start_animation("draw_hud_" .. name, animation_steps)
 
-    self.render_manager:create_draw_object_foreground("hud_" .. name .. "_head", sprite, "head", x_coords[1], 23, 0, 1, 128)
-    self.render_manager:create_text_object(name .. "_name", "PLAYER", Colours.YELLOW1, x_coords[2], 20, 0, 1, 64, text_dir)
-
-    self.render_manager:create_draw_object_foreground("hud_" .. name .. "_health", "icons", "heart", x_coords[3], 38.5, 0, 1, 128)
-    self.render_manager:create_text_object(name .. "_health", tostring(character.health), Colours.RED1, x_coords[4], 36, 0, 1, 64, text_dir)
-
-    self.render_manager:create_draw_object_foreground("hud_" .. name .. "_money", "icons", "money", x_coords[3], 49.5, 0, 1, 128)
-    self.render_manager:create_text_object(name .. "_money", "$" .. tostring(character.money), Colours.YELLOW1, x_coords[4], 47, 0, 1, 64, text_dir)
-
-    self.render_manager:create_draw_object_foreground("hud_" .. name .. "_deck", "icons", "cards", x_coords[3] , 60.5, 0, 1, 140)
-    self.render_manager:create_text_object(name .. "_deck", tostring(#character.deck.cards), Colours.BROWN1, x_coords[4], 58, 0, 1, 64, text_dir)
 end
 
 
@@ -134,14 +146,22 @@ function GameScene:draw_bullets(character)
         {character.x - 7, character.y - 34}
     }
 
+    local animation_steps = {}
     for i, bullet in pairs(character.bullets) do
-        self.entities[name .. "_bullet_icon_" .. i] = Entity(
-            name .. "_bullet_icon" .. i, GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
-                x=bullet_icons_xy[i][1], y=bullet_icons_xy[i][2], w=8, h=8, s=1, r=0,
-                sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200
-            }
-        )
+        table.insert(animation_steps, {delay=0.1, action= function() self:draw_bullet(name, i, bullet_icons_xy[i][1], bullet_icons_xy[i][2], bullet) end})
     end
+    self:start_animation("draw_bullets_" .. name, animation_steps)
+end
+
+
+function GameScene:draw_bullet(name, i, x, y, bullet)
+    self.entities[name .. "_bullet_icon_" .. i] = Entity(
+        name .. "_bullet_icon" .. i, GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
+            x=x, y=y, w=8, h=8, s=1.5, r=0,
+            sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200
+        }
+    )
+    flux.to(self.entities[name .. "_bullet_icon_" .. i], 0.2, {scale=1}):ease("expoout")
 end
 
 
@@ -149,9 +169,14 @@ function GameScene:start_new_game()
     self.letruc:start_new_game(self.player, self.enemy)
 
     local animation_steps = {
-        {delay=0, action= function () self.render_manager:create_text_object("status", "- CURTEL -", Colours.YELLOW1, 120, 45, 0, 1, 255, "centre") end},
-        {delay=0, action= function () flux.to(self.render_manager.text_objects["status"], 1, {y=40}):ease("elasticout") end},
-        {delay=2, action= function () self:start_new_hand() end}
+        {delay=0, action= function () self.render_manager:create_draw_object_foreground("logo", "logo", "default", 120, 55, 0, 1, 300) end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["logo"], 1, {y=50}):ease("elasticout") end},
+        {delay=1.5, action= function () flux.to(self.render_manager.draw_objects_foreground["logo"], 0.1, {y=55}):ease("backin"):oncomplete(function() self.render_manager.draw_objects_foreground["logo"] = nil end) end},
+        {delay=1, action = function () self:draw_bullets(self.player) end},
+        {delay=0, action = function () self:draw_bullets(self.enemy) end},
+        {delay=0, action = function () self:draw_hud(self.player) end},
+        {delay=0, action = function () self:draw_hud(self.enemy) end},
+        {delay=1, action= function () self:start_new_hand() end}
 
     }
     self:start_animation("new_game", animation_steps)
