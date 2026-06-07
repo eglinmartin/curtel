@@ -85,7 +85,6 @@ function ShopScene:enter()
     self.event_manager:trigger(self.event_manager.events.SWITCHSTOCK_RIGHT)
 
     self.render_manager:set_shadow_colour(Colours.GREEN5)
-    self.render_manager.draw_objects_background["background"]:animate({dx=-4, dscale=0.1})
 end
 
 
@@ -124,44 +123,25 @@ function ShopScene:animate_menu()
 
     -- Animate shop title
     for i, v in ipairs(letters) do
-        self.title_frame = 1 + (5 * (i-1))
-        if self.animation_title == self.title_frame then
-            self.render_manager:create_draw_object_foreground("title_shop_" .. v, "title_shop", v, 23 + x_coords[i], 25, 0, 1, 255)
-            self.render_manager.draw_objects_foreground["title_shop_" .. v]:animate({dy=3})
-        end
+        self.render_manager:create_draw_object_foreground("title_shop_" .. v, "title_shop", v, 23 + x_coords[i], 25, 0, 1, 255)
     end
     
     -- Animate player information
-    if self.animation_title == 21 then
-        self.render_manager:create_text_object("player_name", "PLAYER 1", Colours.GREY2, 17, 44, 0, 1, 64, "left")
-        self.render_manager.text_objects["player_name"]:animate({dx=-3})
+    self.render_manager:create_text_object("player_name", "PLAYER 1", Colours.GREY2, 17, 44, 0, 1, 64, "left")
 
-    elseif self.animation_title == 26 then
-        self.render_manager:create_text_object("player_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health), Colours.RED1, 26, 55, 0, 1, 64, "left")
-        self.render_manager:create_draw_object_foreground("hud_player_health", "icons", "heart", 19.5, 57.5, 0, 1, 128)
-        self.render_manager.text_objects["player_health"]:animate({dx=-3})
-        self.render_manager.draw_objects_foreground["hud_player_health"]:animate({dx=-3})
+    self.render_manager:create_text_object("player_health", tostring(self.player.health) .. "/" .. tostring(self.player.max_health), Colours.RED1, 26, 55, 0, 1, 64, "left")
+    self.render_manager:create_draw_object_foreground("hud_player_health", "icons", "heart", 19.5, 57.5, 0, 1, 128)
 
-    elseif self.animation_title == 31 then
-        self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 66, 0, 1, 64, "left")
-        self.render_manager:create_draw_object_foreground("hud_player_money", "icons", "money", 19.5, 68.5, 0, 1, 128)
-        self.render_manager.text_objects["player_money"]:animate({dx=-3})
-        self.render_manager.draw_objects_foreground["hud_player_money"]:animate({dx=-3})
+    self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 66, 0, 1, 64, "left")
+    self.render_manager:create_draw_object_foreground("hud_player_money", "icons", "money", 19.5, 68.5, 0, 1, 128)
 
-    elseif self.animation_title == 36 then
-        self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 77, 0, 1, 64, "left")
-        self.render_manager:create_draw_object_foreground("hud_player_deck", "icons", "cards", 19.5, 79.5, 0, 1, 128)
-        self.render_manager.text_objects["player_deck"]:animate({dx=-3})
-        self.render_manager.draw_objects_foreground["hud_player_deck"]:animate({dx=-3})
+    self.render_manager:create_text_object("player_deck", tostring(#self.player.deck.cards), Colours.BROWN1, 26, 77, 0, 1, 64, "left")
+    self.render_manager:create_draw_object_foreground("hud_player_deck", "icons", "cards", 19.5, 79.5, 0, 1, 128)
 
     -- Animate menu text
-    elseif self.animation_title == 41 then
-        self.render_manager:create_text_object("text_map", "MAP", Colours.GREY2, 17, 102, 0, 1, 64, "left")
-        self.render_manager.text_objects["text_map"]:animate({dx=-3})
-    elseif self.animation_title == 46 then
-        self.render_manager:create_text_object("text_done", "DONE", Colours.GREY2, 17, 113, 0, 1, 64, "left")
-        self.render_manager.text_objects["text_done"]:animate({dx=-3})
-    end
+    self.render_manager:create_text_object("text_map", "MAP", Colours.GREY2, 17, 102, 0, 1, 64, "left")
+    self.render_manager:create_text_object("text_done", "DONE", Colours.GREY2, 17, 113, 0, 1, 64, "left")
+
 end
 
 
@@ -170,30 +150,19 @@ function ShopScene:animate_stock()
     
     if self.animation_stock == 1 then
         self.render_manager:create_text_object("text_category", self.stock_type:upper(), Colours.GREY2, 113, 17, 0, 1, 64, "centre")
-        self.render_manager.text_objects["text_category"]:animate({dx = 2 * self.stock_direction})
-
-        if self.stock_direction == Directions.LEFT then
-            self.entities["category_l"]:animate({dx=-4, dscale=-0.5})
-        elseif self.stock_direction == Directions.RIGHT then
-            self.entities["category_r"]:animate({dx=4, dscale=-0.5})
-        end
 
         -- Draw gun barrel and player's bullets
         if self.stock_type == self.shop.stock_types.BULLETS then
             self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", self.barrel_xy[1], self.barrel_xy[2], 0, 1, 128)
             self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", self.barrel_xy[1], self.barrel_xy[2], 0, 1, 129)
-            self.render_manager.draw_objects_foreground["barrel_base"]:animate({dy=4})
-            self.render_manager.draw_objects_foreground["barrel_chambers"]:animate({dy=4})
             for i, v in pairs(self.player.bullets) do
                 if v then
-                    self.entities["player_bullet_" .. i]:animate({dy=4})
                     self.entities["player_bullet_" .. i]:create_sprite()
                 end
             end
         
         elseif self.stock_type == self.shop.stock_types.CARDS then
             self.render_manager:create_draw_object_foreground("deck", "deck", "deck", self.barrel_xy[1], self.barrel_xy[2], 0, 1, 128)
-            self.render_manager.draw_objects_foreground["deck"]:animate({dy=4})
         end
         
     end
@@ -210,35 +179,29 @@ function ShopScene:animate_stock()
             elseif self.stock_type == self.shop.stock_types.CARDS then
                 self.stock_frame = 1 + (4 * (i-1))
             end
-            if self.animation_stock == self.stock_frame then
 
-                -- Draw bullets
-                if self.stock_type == self.shop.stock_types.BULLETS then
-                    self:redraw_cost(i, v)
-                    self.render_manager.text_objects["shop_item_cost_" .. i]:animate({dy=4})
+            -- Draw bullets
+            if self.stock_type == self.shop.stock_types.BULLETS then
+                self:redraw_cost(i, v)
 
-                    if v ~= EMPTY then
-                        self.entities["shop_item_" .. i] = Item(
-                            "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                            x=self.shop_bullets_xy[i][1]-0.5, y=self.shop_bullets_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
-                            sprite_sheet="bullets", sprite_tag=v.item.tag, depth=128+i, item=v.item, draggable=true, hoverable=true
-                        })
-                        self.entities["shop_item_" .. i]:animate({dy=4})
-                    end
+                if v ~= EMPTY then
+                    self.entities["shop_item_" .. i] = Item(
+                        "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                        x=self.shop_bullets_xy[i][1]-0.5, y=self.shop_bullets_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
+                        sprite_sheet="bullets", sprite_tag=v.item.tag, depth=128+i, item=v.item, draggable=true, hoverable=true
+                    })
+                end
 
-                -- Draw cards
-                elseif self.stock_type == self.shop.stock_types.CARDS then
-                    self:redraw_cost(i, v)
-                    self.render_manager.text_objects["shop_item_cost_" .. i]:animate({dy=4})
+            -- Draw cards
+            elseif self.stock_type == self.shop.stock_types.CARDS then
+                self:redraw_cost(i, v)
 
-                    if v ~= EMPTY then
-                        self.entities["shop_item_" .. i] = Item(
-                            "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-                            x=self.shop_cards_xy[i][1]-0.5, y=self.shop_cards_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
-                            sprite_sheet="cards_" .. v.item.suit, sprite_tag=v.item.value, depth=128+i, item=v.item, draggable=true, hoverable=true
-                        })
-                        self.entities["shop_item_" .. i]:animate({dy=4})
-                    end
+                if v ~= EMPTY then
+                    self.entities["shop_item_" .. i] = Item(
+                        "shop_item_" .. i, self.game_state, self.event_manager, self.input_manager, self.render_manager, {
+                        x=self.shop_cards_xy[i][1]-0.5, y=self.shop_cards_xy[i][2]-0.5, w=19, h=19, s=1, r=0,
+                        sprite_sheet="cards_" .. v.item.suit, sprite_tag=v.item.value, depth=128+i, item=v.item, draggable=true, hoverable=true
+                    })
                 end
                 
             end
@@ -286,10 +249,6 @@ function ShopScene:animate_hovering(dt)
             self.hovered_entity = entity  -- store current hovered entity
 
             if not entity.dragging then
-                if self.render_manager.draw_objects_foreground[entity.id] then
-                    self.render_manager.draw_objects_foreground[entity.id]:animate({dscale=0.2})
-                end
-
                 -- Trigger if hover just started OR if we switched to a different entity
                 if not was_hovering or prev_hovered_entity ~= entity then
                     if string.find(key, "shop_item_") or string.find(key, "player_bullet_") then
@@ -320,10 +279,7 @@ function ShopScene:show_tooltip(item)
     end
 
     self.render_manager:create_text_object("item_name", item.name:upper(), colour, 83, 102, 0, 1, 64, "left")
-    self.render_manager.text_objects["item_name"]:animate({dy=4})
-
     self.render_manager:create_text_object("item_description", item.description, Colours.GREY3, 83, 113, 0, 1, 64, "left")
-    self.render_manager.text_objects["item_description"]:animate({dy=4})
 end
 
 
@@ -334,7 +290,6 @@ function ShopScene:discard_bullet(key, entity)
         local i = tonumber(key:match("player_bullet_(%d+)"))
         if i then
             self.player.bullets[i] = nil
-            self.entities["dustbin"]:animate({dscale=-0.2})
         end
     end
 end
@@ -366,7 +321,6 @@ function ShopScene:move_bullet(key, entity)
 
                     -- Update sprite tags for each bullet and redraw
                     self.entities["player_bullet_" .. picked_up_bullet_i].sprite_tag = barrel_entity.tag
-                    self.entities["player_bullet_" .. picked_up_bullet_i]:animate({dx=0, dy=0, dscale=0.1})
                     self.entities["player_bullet_" .. picked_up_bullet_i]:create_sprite()
 
                     self.entities["player_bullet_" .. barrel_bullet_i].sprite_tag = picked_up_entity.tag
@@ -381,8 +335,6 @@ function ShopScene:move_bullet(key, entity)
                     sprite_sheet="bullets", sprite_tag=picked_up_entity.tag, depth=230, item=picked_up_entity, draggable=true, hoverable=true
                 })
                 self.entities["player_bullet_" .. barrel_bullet_i]:create_sprite()
-                self.entities["player_bullet_" .. barrel_bullet_i]:animate({dscale=-0.25})
-                self.render_manager.draw_objects_foreground["barrel_base"]:animate({dscale=-0.025})
             end
         end
     end
@@ -401,8 +353,6 @@ function ShopScene:buy_bullet(key, entity)
                 if self.player.money >= entity.item.cost then
                     self.player.money = self.player.money - entity.item.cost
                     self.render_manager:create_text_object("player_money", "$" .. tostring(self.player.money), Colours.YELLOW1, 26, 66, 0, 1, 64, "left")
-                    self.render_manager.text_objects["player_money"]:animate({dx=-3})
-                    self.render_manager.draw_objects_foreground["hud_player_money"]:animate({dscale=0.8})
                     
                     -- Buy item
                     self.player.bullets[i] = entity.item
@@ -418,7 +368,6 @@ function ShopScene:buy_bullet(key, entity)
                         local v = self.shop.stock[self.stock_type][j]
                         self:redraw_cost(j, v)
                     end
-                    self.render_manager.text_objects["shop_item_cost_" .. entity_id]:animate({dscale=0.5, dy=-4})
 
                     -- Create new player bullet item and animate
                     self.entities["player_bullet_" .. i] = Item(
@@ -427,15 +376,9 @@ function ShopScene:buy_bullet(key, entity)
                         sprite_sheet="bullets", sprite_tag=entity.item.tag, depth=230, item=entity.item, draggable=true, hoverable=true
                     })
                     self.entities["player_bullet_" .. i]:create_sprite()
-                    self.entities["player_bullet_" .. i]:animate({dscale=-0.25})
-                    self.render_manager.draw_objects_foreground["barrel_base"]:animate({dscale=-0.025})
                     break
 
                 -- If player can't afford it, emphasize cost
-                else
-                    if self.render_manager.text_objects["shop_item_cost_" .. entity_id] then
-                        self.render_manager.text_objects["shop_item_cost_" .. entity_id]:animate({dscale=0.5, dy=-4})
-                    end
                 end
                 
             end

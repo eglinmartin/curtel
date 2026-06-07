@@ -1,5 +1,7 @@
 -- entity.lua
 local Class = require("lib.class")
+local flux = require("lib.flux")
+
 local Entity = Class{}
 
 
@@ -22,9 +24,7 @@ function Entity:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANA
     if args.r then self.rotation = args.r * (math.pi / 180) end
 
     -- Create theoretical positions
-    self.dx = 0
-    self.dy = 0
-    self.dscale = 0
+
     self.drotation = 0
     self.shadow_x = self.x
     self.shadow_y = self.y
@@ -46,6 +46,10 @@ function Entity:init(id, GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANA
     self.dragging = false
     self.clicked = false
     self.released = false
+
+    if self.sprite_sheet and self.sprite_tag then
+        self:create_sprite()
+    end
 end
 
 
@@ -74,11 +78,11 @@ function Entity:create_sprite()
     -- Create sprite on screen
     if self.background then
         self.render_manager:create_draw_object_background(
-        self.id, self.sprite_sheet, self.sprite_tag, self.x + self.dx, self.y + self.dy, self.rotation + self.drotation, self.scale + self.dscale, self.depth
+        self.id, self.sprite_sheet, self.sprite_tag, self.x, self.y, self.rotation, self.scale, self.depth
     )
     else
         self.render_manager:create_draw_object_foreground(
-            self.id, self.sprite_sheet, self.sprite_tag, self.x + self.dx, self.y + self.dy, self.rotation + self.drotation, self.scale + self.dscale, self.depth
+            self.id, self.sprite_sheet, self.sprite_tag, self.x, self.y, self.rotation, self.scale, self.depth
         )
     end
 end
@@ -103,20 +107,21 @@ end
 function Entity:update(dt, mx, my, mouse_down, mouse_pressed)
     -- Update inputs
     self:update_input(mx, my, mouse_down, mouse_pressed)
-
-    if self.dx ~= 0 or self.dy ~= 0 or self.dscale ~= 0 and not self.dragging then
-        self.dx = self:return_to_xy(self.dx, dt)
-        self.dy = self:return_to_xy(self.dy, dt)
-        self.dscale = self:return_to_scale(dt)
+    
+    if self.x ~= self.xprevious or self.y ~= self.yprevious or self.scale ~= self.scaleprevious or self.rotation ~= self.rotationprevious then
         self:create_sprite()
     end
-    
+
+    self.xprevious = self.x
+    self.yprevious = self.y
+    self.scaleprevious = self.scale
+    self.rotationprevious = self.rotation
 end
 
 
 function Entity:drag()
-    self.dx = self.input_manager.mx - self.x
-    self.dy = self.input_manager.my - self.y
+    self.x = self.input_manager.mx
+    self.y = self.input_manager.my
     self.dscale = 0.2
     self.depth = 254
     self:create_sprite()
@@ -152,7 +157,6 @@ function Entity:update_input(mx, my, mouse_down, mouse_pressed)
     local is_hovered = self:contains_point(mx, my)
     if is_hovered ~= self.hovered then
         self.hovered = is_hovered
-        self:on_hover_changed()
     end
     
     local is_clicked = is_hovered and mouse_pressed
@@ -173,24 +177,38 @@ function Entity:update_input(mx, my, mouse_down, mouse_pressed)
             self:on_drag_end()
         end
     end
+
+    if self.dragging then
+    end
+
 end
 
 
 function Entity:clear_sprite()
     self.render_manager.draw_objects_foreground[self.id] = nil
-    self.render_manager.draw_objects_background[self.id] = nil
 end
 
 
-function Entity:on_hover_changed()
+function Entity:on_hover_start()
+    flux.to(self, 0.25, {scale=1.2}):ease("expoout"):oncomplete(function()
+    end)
+end
+
+
+function Entity:on_hover_end()
+    flux.to(self, 0.25, {scale=1}):ease("expoout"):oncomplete(function()
+    end)
 end
 
 
 function Entity:on_click()
+    
 end
 
 
 function Entity:on_drag_start()
+    self.original_x = self.x
+    self.original_y = self.y
 end
 
 
@@ -198,8 +216,10 @@ function Entity:on_drag_end()
     self.dragging = false
     self.released = true
     self.depth = self.original_depth
-    self.release_x = self.x + self.dx
-    self.release_y = self.y + self.dy
+    
+    self.release_x = self.x
+    self.release_y = self.y
+    flux.to(self, 0.5, {x=self.original_x, y=self.original_y, scale=1}):ease("expoout")
 end
 
 
