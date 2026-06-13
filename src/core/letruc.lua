@@ -158,7 +158,7 @@ function LeTruc:finish_hand()
     -- Reward the winner, punish the loser and end the trick
     if self.hand_score[self.player1] > self.hand_score[self.player2] then
         self.game_score[self.player1] = self.game_score[self.player1] + 1
-    elseif self.hand_score[self.player2] > self.hand_score[self.player2] then
+    elseif self.hand_score[self.player2] > self.hand_score[self.player1] then
         self.game_score[self.player2] = self.game_score[self.player2] + 1
     end
 end
