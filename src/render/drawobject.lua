@@ -29,6 +29,11 @@ function DrawObject:move(x, y)
 end
 
 
+function DrawObject:rescale(scale)
+    self.scale = scale
+end
+
+
 function DrawObject:rotate(rot)
     self.rot = rot * (math.pi / 180)
 end

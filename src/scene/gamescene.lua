@@ -29,7 +29,7 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
     -- Create pointer
     self.pointer = Entity("pointer", GAME_STATE, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
         x=54, y=54, w=8, h=8, s=1, r=0,
-        sprite_sheet="icons", sprite_tag="down", depth=254,
+        sprite_sheet="icons", sprite_tag="down", depth=300,
     })
     self.entities["pointer"] = self.pointer
 
@@ -46,7 +46,7 @@ function GameScene:enter()
     self.render_manager:clear_screen()
 
     -- Update player
-    self.player:move(74,103)
+    self.player:move(78, 103)
     self.player:create_sprite()
     self.player.hand = {EMPTY, EMPTY, EMPTY}
 
@@ -66,6 +66,7 @@ function GameScene:enter()
     self.render_manager:create_draw_object_foreground("table", "table", "1", 120, 114.5, 0, 1, 128)
 
     self:start_new_game()
+    self:draw_barrel()
 end
 
 
@@ -107,27 +108,36 @@ function GameScene:draw_hud(character)
         
         {delay=0, action= function () self.render_manager:create_text_object(name .. "_deck", tostring(#character.deck.cards), Colours.BROWN1, x_coords[4], 60, 0, 1, 64, text_dir) end},
         {delay=0, action= function () flux.to(self.render_manager.text_objects[name .. "_deck"], 1, {y=58}):ease("elasticout") end},
+
+        {delay=0.1, action= function () self:draw_card_markers(character) end}
     }
-
-
-    -- Draw card markers
-    for i = 1, character.hand_size do
-        local x = (11.5 + ( 10 * i))
-        local y = 101.5 + (3 * i)
-
-        local cards_xy = {0 + x, 0 + y}
-        local name = "player"
-        if character == self.enemy then
-            cards_xy = {240 - x, 0 + y}
-            name = "enemy"
-        end
-        
-        table.insert(animation_steps, {delay=0.1, action= function() self.render_manager:create_draw_object_foreground(name .. "_card_empty_" .. i, "cards_general", "empty", cards_xy[1], cards_xy[2]+2, 0, 1, 128) end})
-        table.insert(animation_steps, {delay=0, action= function() flux.to(self.render_manager.draw_objects_foreground[name .. "_card_empty_" .. i], 1, {y=cards_xy[2]}):ease("elasticout") end})
-    end
     
     self:start_animation("draw_hud_" .. name, animation_steps)
 
+end
+
+
+function GameScene:draw_card_markers(character)
+    -- Draw card markers
+    local animation_steps = {}
+    local name = "player"
+    if character == self.enemy then
+        name = "enemy"
+    end
+
+    for i = 1, character.hand_size do
+        local x = (12.5 + ( 10 * i))
+        local y = 101.5 + (3 * i)
+        local cards_xy = {0 + x, 0 + y}
+        if character == self.enemy then
+            cards_xy = {240 - x, 0 + y}
+        end
+        
+        table.insert(animation_steps, {delay=0, action= function() self.render_manager:create_draw_object_foreground(name .. "_card_empty_" .. i, "cards_general", "empty", cards_xy[1], cards_xy[2]+2, 0, 1, 128) end})
+        table.insert(animation_steps, {delay=0, action= function() flux.to(self.render_manager.draw_objects_foreground[name .. "_card_empty_" .. i], 1, {y=cards_xy[2]}):ease("elasticout") end})
+    end
+    
+    self:start_animation("draw_card_makers_" .. name, animation_steps)
 end
 
 
@@ -161,7 +171,13 @@ function GameScene:draw_bullet(name, i, x, y, bullet)
             sprite_sheet="icons", sprite_tag="bullet_" .. bullet.type, depth=200
         }
     )
-    flux.to(self.entities[name .. "_bullet_icon_" .. i], 0.2, {scale=1}):ease("expoout")
+    flux.to(self.entities[name .. "_bullet_icon_" .. i], 0.25, {scale=1}):ease("expoout")
+end
+
+
+function GameScene:draw_barrel()
+    -- self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", 13.5, 121.5, 0, 1, 253)
+    -- self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", 13.5, 121.5, 0, 1, 254)
 end
 
 
@@ -172,8 +188,10 @@ function GameScene:clear_bullets(character)
     end
 
     for i, bullet in pairs(character.bullets) do
-        self.entities[name .. "_bullet_icon_" .. i]:clear_sprite()
-        self.entities[name .. "_bullet_icon_" .. i] = nil
+        if self.entities[name .. "_bullet_icon_" .. i] then
+            self.entities[name .. "_bullet_icon_" .. i]:clear_sprite()
+            self.entities[name .. "_bullet_icon_" .. i] = nil
+        end
     end
 end
 
@@ -185,8 +203,6 @@ function GameScene:start_new_game()
         {delay=0, action= function () self.render_manager:create_draw_object_foreground("logo", "logo", "default", 120, 55, 0, 1, 300) end},
         {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["logo"], 1, {y=50}):ease("elasticout") end},
         {delay=1.5, action= function () flux.to(self.render_manager.draw_objects_foreground["logo"], 0.1, {y=55}):ease("backin"):oncomplete(function() self.render_manager.draw_objects_foreground["logo"] = nil end) end},
-        {delay=1, action = function () self:draw_bullets(self.player) end},
-        {delay=0, action = function () self:draw_bullets(self.enemy) end},
         {delay=0, action = function () self:draw_hud(self.player) end},
         {delay=0, action = function () self:draw_hud(self.enemy) end},
         {delay=1, action= function () self:start_new_hand() end}
@@ -200,7 +216,7 @@ function GameScene:start_new_hand()
     self.letruc:start_new_hand()
 
     local animation_steps = {
-        {delay=0, action= function () self.render_manager:create_text_object("status", "- HAND " .. self.letruc.num_hands .. " -", Colours.YELLOW1, 120, 45, 0, 1, 255, "centre") end},
+        {delay=0, action= function () self.render_manager:create_text_object("status", "HAND " .. self.letruc.num_hands .. " (" .. self.letruc.game_score[self.player] .. "-" .. self.letruc.game_score[self.enemy] .. ")", Colours.YELLOW1, 120, 45, 0, 1, 255, "centre") end},
         {delay=0, action= function () flux.to(self.render_manager.text_objects["status"], 1, {y=40}):ease("elasticout") end},
         {delay=0.5, action= function() self:deal_hand(self.player) end},
         {delay=0, action= function() self:deal_hand(self.enemy) end},
@@ -213,23 +229,33 @@ end
 function GameScene:start_new_trick()
     self.letruc:start_new_trick()
     local animation_steps = {
-        {delay=0, action= function () self.render_manager:create_text_object("status", "PLAY!", Colours.GREEN1, 120, 45, 0, 1, 255, "centre") end},
+        {delay=0, action= function () self.render_manager:create_text_object("status", "PLAY!", Colours.GREEN2, 120, 44, 0, 1, 255, "centre") end},
+        {delay=0, action = function () self:draw_bullets(self.player) end},
+        {delay=0, action = function () self:draw_bullets(self.enemy) end},
+
         {delay=0, action= function () flux.to(self.render_manager.text_objects["status"], 1, {y=40}):ease("elasticout") end},
         {delay=2, action= function () flux.to(self.render_manager.text_objects["status"], 0.1, {y=45}):ease("backin"):oncomplete(function() self.render_manager.text_objects["status"] = nil end) end},
-        {delay=1, action= function () self:play_card(self.enemy) end}
+        
+
+        {delay=1, action= function () self.render_manager:create_text_object("player_gamble", "Bet?", Colours.YELLOW1, 17, 86, 0, 1, 255, "left") end},
+        {delay=0, action= function () flux.to(self.render_manager.text_objects["player_gamble"], 1, {y=82}):ease("elasticout") end},
+        -- {delay=0, action= function () self.render_manager:create_draw_object_foreground("player_gamble_tick", "icons", "tick", 35, 89.5, 0, 1, 300) end},
+        -- {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["player_gamble_tick"], 1, {y=85.5}):ease("elasticout") end},
+
+        {delay=0, action= function () self.render_manager:create_text_object("enemy_gamble", "Raised!", Colours.RED2, 224, 86, 0, 1, 255, "right") end},
+        {delay=0, action= function () flux.to(self.render_manager.text_objects["enemy_gamble"], 1, {y=82}):ease("elasticout") end},
+        {delay=2, action= function () self:play_card(self.enemy) end}
     }
     self:start_animation("new_trick", animation_steps)
 end
 
 
 function GameScene:deal_hand(character)
-    self.letruc:deal_hand(character)
-
     local animation_steps = {}
     local name = character == self.enemy and "enemy" or "player"
 
     for i = 1, character.hand_size do
-        local x = 11.5 + (10 * i)
+        local x = 12.5 + (10 * i)
         local y = 101.5 + (3 * i)
         local cards_xy = character == self.enemy and {240 - x, y} or {x, y}
         
@@ -250,6 +276,7 @@ function GameScene:deal_card(character, player_card, i, name, cards_xy)
     local text_x = 26
     local text_dir = -1
     local card_interact = true
+
     if character == self.enemy then
         deck_x = 220.5
         text_x = 215
@@ -305,16 +332,12 @@ function GameScene:play_card(character)
 
         local card = available_cards[math.random(#available_cards)]
         self.enemy.picked_card = card['card']
-        self.letruc:select_card(self.enemy, card['card'])
-
         self.enemy.hand[card['id']] = EMPTY
         self.render_manager.draw_objects_foreground["enemy_card_" .. card['id']] = nil
-
-        -- local card_y = self.render_manager.draw_objects_foreground["enemy_card_" .. card['id']].y
-        -- flux.to(self.render_manager.draw_objects_foreground["enemy_card_" .. card['id']], 0.1, {y=card_y-10}):ease("backin"):oncomplete(
-        --     function() self.render_manager.draw_objects_foreground["enemy_card_" .. card['id']] = nil end
-        -- )
     end
+
+    
+    self.render_manager.text_objects[character.id .. "_gamble"] = nil
 
     self.render_manager:create_draw_object_foreground(
         character.id .. "_card_large", "cards_large_" .. card_suit,
@@ -325,7 +348,7 @@ function GameScene:play_card(character)
     character.selected_card = character.picked_card
     character.picked_card = nil
 
-    if self.player.selected_card and self.enemy.selected_card then
+    if self.player.selected_card and self.enemy.selected_card and self.render_manager.draw_objects_foreground["player_card_large"] and self.render_manager.draw_objects_foreground["enemy_card_large"] then
         self:compare_cards()
     end
 end
@@ -333,27 +356,69 @@ end
 
 function GameScene:compare_cards()
     local winner = self.letruc:compare_cards()
-
-    local animation_steps = {
-        {delay=1, action= function () self:clear_bullets(self.player) end},
-        {delay=0, action= function () self:clear_bullets(self.enemy) end},
-        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.5, {x=80, y=60, rot=0}):ease("expoout") end},
+    local animation_compare_cards_steps = {
+        {delay=1, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.5, {x=80, y=60, rot=0}):ease("expoout") end},
         {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.5, {x=159, y=60, rot=0}):ease("expoout") end},
         {delay=0, action= function () self.render_manager.draw_objects_foreground["enemy_card_large"].covered = false end},
         {delay=0, action= function () self.render_manager.draw_objects_foreground["enemy_card_large"]:change_sprite("cards_large_" .. self.enemy.selected_card.suit, self.enemy.selected_card.value) end},
-        {delay=1, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.1, {x=105}):ease("linear") end},
-        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.1, {x=134}):ease("linear") end},
-        {delay=0.1, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.5, {x=80}):ease("expoout") end},
-        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.5, {x=159}):ease("expoout") end},
-        {delay=1, action= function () print() end},
+        {delay=0, action= function () self:clear_bullets(self.player) end},
+        {delay=0, action= function () self:clear_bullets(self.enemy) end},
+    
     }
-    self:start_animation("compare_cards", animation_steps)
+
+    if winner then
+        local winning_card = winner.id .. "_card_large"
+        table.insert(animation_compare_cards_steps, {delay=1, action= function () self.render_manager.draw_objects_foreground[winning_card]:rescale(1.2) end})
+        table.insert(animation_compare_cards_steps, {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground[winning_card], 0.5, {scale=1}) end})
+    end
+
+    table.insert(animation_compare_cards_steps, {delay=1, action= function () self:finish_trick() end})
+    self:start_animation("compare_cards", animation_compare_cards_steps)
+end
+
+
+function GameScene:finish_trick()
+    self.letruc:finish_trick()
+    local animation_finish_trick = {
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.5, {x=118.5, y=51.5, rot=-0.2}):ease("expoout") end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.5, {x=121.5, y=55.5, rot=0.2}):ease("expoout") end},
+
+        {delay=0, action= function () self.render_manager.draw_objects_foreground["player_card_large"]:change_sprite("cards_large_general", "back1") end},
+        {delay=0, action= function () self.render_manager.draw_objects_foreground["enemy_card_large"]:change_sprite("cards_large_general", "back1") end},
+
+        {delay=0.5, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.5, {y=-55.5}):ease("backin") end},
+        {delay=0.1, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.5, {y=-51.5}):ease("backin") end},
+
+        {delay=0.5, action= function () self.player.selected_card = nil end},
+        {delay=0, action= function () self.enemy.selected_card = nil end},
+        {delay=0, action= function () self.render_manager.draw_objects_foreground['player_card_large'] = nil end},
+        {delay=0, action= function () self.render_manager.draw_objects_foreground['enemy_card_large'] = nil end},
+    }
+
+    if self.letruc.num_tricks < 3 then
+        table.insert(animation_finish_trick, {delay=1, action= function () self:start_new_trick() end})
+    else
+        table.insert(animation_finish_trick, {delay=1, action= function () self:finish_hand() end})
+    end
+
+    self:start_animation("finish_trick", animation_finish_trick)
+end
+
+
+function GameScene:finish_hand()
+    self.letruc:finish_hand()
+    self:start_new_hand()
+end
+
+
+function GameScene:spin_barrel(character)
+
 end
 
 
 function GameScene:create_enemy()
     self.enemy = Enemy("enemy", self.game_state, self.event_manager, self.input_manager, self.render_manager, {
-        x=166, y=103, w=20, h=32, s=1, r=0, sprite_sheet="enemy1", sprite_tag="idle", depth=128,
+        x=162, y=103, w=20, h=32, s=1, r=0, sprite_sheet="enemy1", sprite_tag="idle", depth=128,
     })
     self.enemy.money = 10
 
