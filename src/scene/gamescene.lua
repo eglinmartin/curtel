@@ -35,6 +35,7 @@ function GameScene:init(GAME_STATE, RENDER_MANAGER, EVENT_MANAGER, INPUT_MANAGER
 
     -- Set interaction states
     self.hovering = false
+    self.can_play = false
 end
 
 
@@ -228,6 +229,7 @@ end
 
 function GameScene:start_new_trick()
     self.letruc:start_new_trick()
+    self.can_play = false
     local animation_steps = {
         {delay=0, action= function () self.render_manager:create_text_object("status", "PLAY!", Colours.GREEN2, 120, 44, 0, 1, 255, "centre") end},
         {delay=0, action = function () self:draw_bullets(self.player) end},
@@ -236,8 +238,9 @@ function GameScene:start_new_trick()
         {delay=0, action= function () flux.to(self.render_manager.text_objects["status"], 1, {y=40}):ease("elasticout") end},
         {delay=2, action= function () flux.to(self.render_manager.text_objects["status"], 0.1, {y=45}):ease("backin"):oncomplete(function() self.render_manager.text_objects["status"] = nil end) end},
         
+        {delay=0, action= function() self.can_play = true end},
 
-        {delay=1, action= function () self.render_manager:create_text_object("player_gamble", "Bet?", Colours.YELLOW1, 17, 86, 0, 1, 255, "left") end},
+        {delay=0, action= function () self.render_manager:create_text_object("player_gamble", "Bet?", Colours.YELLOW1, 17, 86, 0, 1, 255, "left") end},
         {delay=0, action= function () flux.to(self.render_manager.text_objects["player_gamble"], 1, {y=82}):ease("elasticout") end},
         -- {delay=0, action= function () self.render_manager:create_draw_object_foreground("player_gamble_tick", "icons", "tick", 35, 89.5, 0, 1, 300) end},
         -- {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["player_gamble_tick"], 1, {y=85.5}):ease("elasticout") end},
@@ -314,6 +317,7 @@ function GameScene:play_card(character)
     if character == self.player then
         card_suit = character.picked_card.suit
         card_value = character.picked_card.value
+        self.can_play = false
     end
 
     if character == self.enemy then
@@ -500,6 +504,10 @@ function GameScene:animate_hovering(dt)
                         break
                     end
 
+                    if entity.id:find("player_card_") and not self.can_play then
+                        break
+                    end
+
                     entity:on_hover_start()
                 end
             end
@@ -541,7 +549,7 @@ function GameScene:animate_dragging(dt)
     for _, entity in pairs(self.entities) do
         if entity.dragging then
             
-            if entity.id:find("player_card_") and self.letruc.game_state == self.letruc.states['PLAYTRICK'] then
+            if entity.id:find("player_card_") and self.letruc.game_state == self.letruc.states['PLAYTRICK'] and self.can_play then
                 entity:drag()
                 self.player.picked_card = entity.item
             end
@@ -551,13 +559,12 @@ function GameScene:animate_dragging(dt)
             if math.abs(self.input_manager.mx - 120) <= 20 then
                 
                 -- Select card
-                if self.player.picked_card then
+                if self.player.picked_card and self.can_play then
                     self:play_card(self.player)
+                    entity:clear_sprite()
+                    self.entities[entity.id] = nil
+                    self.player.hand[tonumber(entity.id:match("%d+"))] = EMPTY
                 end
-
-                entity:clear_sprite()
-                self.entities[entity.id] = nil
-                self.player.hand[tonumber(entity.id:match("%d+"))] = EMPTY
             end
         end
     end
