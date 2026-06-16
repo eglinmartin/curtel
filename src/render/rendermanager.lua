@@ -142,76 +142,71 @@ end
 
 
 function RenderManager:draw_foreground()
-    local draw_list = {}
+    -- Build a unified depth-sorted list of all renderable objects
+    local render_list = {}
     for _, obj in pairs(self.draw_objects_foreground) do
-        table.insert(draw_list, obj)
+        table.insert(render_list, { type = "sprite", obj = obj })
     end
-    table.sort(draw_list, function(a, b)
-        return a.depth < b.depth
-    end)
-
-    local draw_text_list = {}
     for _, obj in pairs(self.text_objects) do
-        table.insert(draw_text_list, obj)
+        table.insert(render_list, { type = "text", obj = obj })
     end
-    table.sort(draw_text_list, function(a, b)
-        return a.depth < b.depth
+    table.sort(render_list, function(a, b)
+        return a.obj.depth < b.obj.depth
     end)
-    
-    for _, draw_obj in ipairs(draw_list) do
-        self:draw_shadow(
-            draw_obj.sprite,
-            draw_obj.x + draw_obj.dx,
-            draw_obj.y + draw_obj.dy,
-            draw_obj.rot + draw_obj.drot,
-            draw_obj.scale + draw_obj.dscale,
-            draw_obj.sprite:getWidth() / 2,
-            draw_obj.sprite:getHeight() / 2
-        )
-    end
 
-    for _, text_obj in ipairs(draw_text_list) do
-        local text_scale = text_obj.scale + text_obj.dscale
-        love.graphics.setColor(self.shadow_colour)
-        local offsets = {{2, 0}, {2, 1}, {2, 2}, {1, 2}, {0, 2}}
-        for i = 1, #offsets do
-            local ox = (offsets[i][1] * text_scale)
-            local oy = (offsets[i][2] * text_scale) - 6
-            self:draw_characters(text_obj.text, text_obj.x + text_obj.dx + ox, text_obj.y + text_obj.dy + oy, text_scale, text_obj.align)
-        end
-    end
-    love.graphics.setColor(1, 1, 1, 1)
-
-    for _, text_obj in ipairs(draw_text_list) do
-        local text_scale = text_obj.scale + text_obj.dscale
-        love.graphics.setColor(self.colours.BLACK)
-        local offsets = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}}
-        for i = 1, #offsets do
-            local ox = (offsets[i][1] * text_scale)
-            local oy = (offsets[i][2] * text_scale)
-            self:draw_characters(
-                text_obj.text,
-                text_obj.x + text_obj.dx + ox,
-                text_obj.y + text_obj.dy + oy - 6,
-                text_scale,
-                text_obj.align
+    -- Draw shadows
+    for _, entry in ipairs(render_list) do
+        if entry.type == "sprite" then
+            local draw_obj = entry.obj
+            self:draw_shadow(
+                draw_obj.sprite,
+                draw_obj.x + draw_obj.dx,
+                draw_obj.y + draw_obj.dy,
+                draw_obj.rot + draw_obj.drot,
+                draw_obj.scale + draw_obj.dscale,
+                draw_obj.sprite:getWidth() / 2,
+                draw_obj.sprite:getHeight() / 2
             )
         end
-        love.graphics.setColor(text_obj.colour)
-        self:draw_characters(text_obj.text, text_obj.x + text_obj.dx, text_obj.y + text_obj.dy - 6, text_scale, text_obj.align)
     end
 
-    love.graphics.setColor(1, 1, 1, 1)
-    for _, draw_obj in ipairs(draw_list) do
-        draw_obj.sprite:draw(
-            draw_obj.x + draw_obj.dx,
-            draw_obj.y + draw_obj.dy,
-            draw_obj.rot + draw_obj.drot,
-            draw_obj.scale + draw_obj.dscale,
-            draw_obj.scale + draw_obj.dscale,
-            draw_obj.sprite:getWidth() / 2,
-            draw_obj.sprite:getHeight() / 2
-        )
+    -- Draw sprites and text interweaved, sorted by depth
+    for _, entry in ipairs(render_list) do
+        if entry.type == "sprite" then
+            local draw_obj = entry.obj
+            love.graphics.setColor(1, 1, 1, 1)
+            draw_obj.sprite:draw(
+                draw_obj.x + draw_obj.dx,
+                draw_obj.y + draw_obj.dy,
+                draw_obj.rot + draw_obj.drot,
+                draw_obj.scale + draw_obj.dscale,
+                draw_obj.scale + draw_obj.dscale,
+                draw_obj.sprite:getWidth() / 2,
+                draw_obj.sprite:getHeight() / 2
+            )
+        elseif entry.type == "text" then
+            local text_obj = entry.obj
+            local text_scale = text_obj.scale + text_obj.dscale
+
+            love.graphics.setColor(self.shadow_colour)
+            local shadow_offsets = {{2, 0}, {2, 1}, {2, 2}, {1, 2}, {0, 2}}
+            for i = 1, #shadow_offsets do
+                local ox = shadow_offsets[i][1] * text_scale
+                local oy = shadow_offsets[i][2] * text_scale - 6
+                self:draw_characters(text_obj.text, text_obj.x + text_obj.dx + ox, text_obj.y + text_obj.dy + oy, text_scale, text_obj.align)
+            end
+
+            love.graphics.setColor(self.colours.BLACK)
+            local outline_offsets = {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}}
+            for i = 1, #outline_offsets do
+                local ox = outline_offsets[i][1] * text_scale
+                local oy = outline_offsets[i][2] * text_scale
+                self:draw_characters(text_obj.text, text_obj.x + text_obj.dx + ox, text_obj.y + text_obj.dy + oy - 6, text_scale, text_obj.align)
+            end
+
+            love.graphics.setColor(text_obj.colour)
+            self:draw_characters(text_obj.text, text_obj.x + text_obj.dx, text_obj.y + text_obj.dy - 6, text_scale, text_obj.align)
+        end
     end
 
     love.graphics.setColor(1, 1, 1, 1)
