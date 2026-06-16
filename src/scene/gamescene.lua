@@ -67,7 +67,6 @@ function GameScene:enter()
     self.render_manager:create_draw_object_foreground("table", "table", "1", 120, 114.5, 0, 1, 128)
 
     self:start_new_game()
-    self:draw_barrel()
 end
 
 
@@ -176,12 +175,6 @@ function GameScene:draw_bullet(name, i, x, y, bullet)
 end
 
 
-function GameScene:draw_barrel()
-    -- self.render_manager:create_draw_object_foreground("barrel_base", "barrel", "base", 13.5, 121.5, 0, 1, 253)
-    -- self.render_manager:create_draw_object_foreground("barrel_chambers", "barrel", "chambers", 13.5, 121.5, 0, 1, 254)
-end
-
-
 function GameScene:clear_bullets(character)
     local name = "player"
     if character == self.enemy then
@@ -201,7 +194,7 @@ function GameScene:start_new_game()
     self.letruc:start_new_game(self.player, self.enemy)
 
     local animation_steps = {
-        {delay=0, action= function () self.render_manager:create_draw_object_foreground("logo", "logo", "default", 120, 55, 0, 1, 300) end},
+        {delay=0, action= function () self.render_manager:create_draw_object_foreground("logo", "logo", "default", 120, 55, 0, 1, 270) end},
         {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["logo"], 1, {y=50}):ease("elasticout") end},
         {delay=1.5, action= function () flux.to(self.render_manager.draw_objects_foreground["logo"], 0.1, {y=55}):ease("backin"):oncomplete(function() self.render_manager.draw_objects_foreground["logo"] = nil end) end},
         {delay=0, action = function () self:draw_hud(self.player) end},
@@ -271,6 +264,11 @@ function GameScene:deal_hand(character)
     end
 
     self:start_animation("deal_" .. name, animation_steps)
+end
+
+
+function GameScene:bet_on_hand()
+    
 end
 
 
@@ -374,9 +372,13 @@ function GameScene:compare_cards()
         local winning_card = winner.id .. "_card_large"
         table.insert(animation_compare_cards_steps, {delay=1, action= function () self.render_manager.draw_objects_foreground[winning_card]:rescale(1.2) end})
         table.insert(animation_compare_cards_steps, {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground[winning_card], 0.5, {scale=1}) end})
-    end
+        
+        -- table.insert(animation_compare_cards_steps, {delay=0, action= function () self.render_manager:create_text_object("text_winner", "WINNER!", Colours.YELLOW1, 80, 60, 0, 1, 400, "centre") end})
 
-    table.insert(animation_compare_cards_steps, {delay=1, action= function () self:finish_trick() end})
+        table.insert(animation_compare_cards_steps, {delay=1, action= function () self:finish_trick() end})
+    else
+        table.insert(animation_compare_cards_steps, {delay=1, action= function () self:finish_trick() end})
+    end
     self:start_animation("compare_cards", animation_compare_cards_steps)
 end
 
@@ -391,7 +393,7 @@ function GameScene:finish_trick()
         {delay=0, action= function () self.render_manager.draw_objects_foreground["enemy_card_large"]:change_sprite("cards_large_general", "back1") end},
 
         {delay=0.5, action= function () flux.to(self.render_manager.draw_objects_foreground["player_card_large"], 0.5, {y=-55.5}):ease("backin") end},
-        {delay=0.1, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.5, {y=-51.5}):ease("backin") end},
+        {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground["enemy_card_large"], 0.5, {y=-51.5}):ease("backin") end},
 
         {delay=0.5, action= function () self.player.selected_card = nil end},
         {delay=0, action= function () self.enemy.selected_card = nil end},
@@ -411,12 +413,49 @@ end
 
 function GameScene:finish_hand()
     self.letruc:finish_hand()
-    self:start_new_hand()
+    -- self:start_new_hand()
+    self:spin_barrel(self.player)
 end
 
 
 function GameScene:spin_barrel(character)
 
+    local x= 13.5
+    if character == self.enemy then
+        x = 226.5
+    end
+    self.render_manager:create_draw_object_foreground(character.id .. "_barrel_base", "barrel", "base", x, 165.5, 0, 1, 250)
+    self.render_manager:create_draw_object_foreground(character.id .. "_barrel", "barrel", "chambers", x, 165.5, 0, 1, 251)
+
+    if character == self.player then
+        self.render_manager:create_draw_object_foreground(character.id .. "_barrel_spinner", "barrel", "spinner_left", x, 165.5, 0, 1, 253)
+    else
+        self.render_manager:create_draw_object_foreground(character.id .. "_barrel_spinner", "barrel", "spinner_right", x, 165.5, 0, 1, 253)
+    end
+
+    flux.to(self.render_manager.draw_objects_foreground[character.id .. "_barrel_base"], 0.5, {x=x, y=121.5}):ease('backout')
+    flux.to(self.render_manager.draw_objects_foreground[character.id .. "_barrel"], 0.5, {x=x, y=121.5}):ease('backout')
+    flux.to(self.render_manager.draw_objects_foreground[character.id .. "_barrel_spinner"], 0.5, {x=x, y=121.5}):ease('backout')
+
+    local barrel_bullets_xy = {
+        {self.render_manager.draw_objects_foreground[character.id .. "_barrel"].x, self.render_manager.draw_objects_foreground[character.id .. "_barrel"].y-23},
+        {self.render_manager.draw_objects_foreground[character.id .. "_barrel"].x+20, self.render_manager.draw_objects_foreground[character.id .. "_barrel"].y-11},
+        {self.render_manager.draw_objects_foreground[character.id .. "_barrel"].x+20, self.render_manager.draw_objects_foreground[character.id .. "_barrel"].y+11},
+        {self.render_manager.draw_objects_foreground[character.id .. "_barrel"].x, self.render_manager.draw_objects_foreground[character.id .. "_barrel"].y+23},
+        {self.render_manager.draw_objects_foreground[character.id .. "_barrel"].x-20, self.render_manager.draw_objects_foreground[character.id .. "_barrel"].y+11},
+        {self.render_manager.draw_objects_foreground[character.id .. "_barrel"].x-20, self.render_manager.draw_objects_foreground[character.id .. "_barrel"].y-11},
+    }
+    for i, v in pairs(self.player.bullets) do
+        if v then
+            self.render_manager:create_draw_object_foreground(character.id .. "_bullet_" .. i, "bullets", v.tag, barrel_bullets_xy[i][1], barrel_bullets_xy[i][2], 0, 1, 252)
+            flux.to(self.render_manager.draw_objects_foreground[character.id .. "_bullet_" .. i], 0.5, {y=barrel_bullets_xy[i][2] - 44}):ease('backout')
+        end
+    end
+
+    -- local animation_spin_barrel = {
+    --     {delay=0, action= function () flux.to(self.render_manager.draw_objects_foreground[character.id .. "_barrel_base"], 0.5, {x=8, y=227}):ease("expoout") end},
+    -- }
+    -- self:start_animation("spin_barrel", animation_spin_barrel)
 end
 
 

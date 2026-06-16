@@ -21,7 +21,7 @@ function GameState:init(GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAG
 
     -- Create persistent cursor entity
     self.cursor = Entity("cursor", GAME_CONTEXT, EVENT_MANAGER, INPUT_MANAGER, RENDER_MANAGER, {
-        x=0, y=0, w=24, h=24, s=1, r=0, sprite_sheet="cursors", sprite_tag="pointer", depth=255,
+        x=0, y=0, w=24, h=24, s=1, r=0, sprite_sheet="cursors", sprite_tag="pointer", depth=300,
     })
 end
 
